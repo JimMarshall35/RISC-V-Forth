@@ -36,7 +36,7 @@ string ReturnStr_ "r"
 
 string UnknownTokenStartStr_ "unknowntoken:'" ( TODO: needs compiler change to allow spaces within strings but not high priority )
 
-string UnknownTokenEndStr_ "'\n"
+string UnknownTokenEndStr_ "'\n\r"
 
 string branch0TokenStr_ "b0"
 

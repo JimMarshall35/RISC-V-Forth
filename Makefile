@@ -42,7 +42,7 @@ LIBRARY_C = \
 
 # example
 EXAMPLE_C = $(wildcard USART_Printf/User/*.c)  $(LIBRARY_C)
-EXAMPLE_S := $(wildcard USART_Printf/User/*.S USART_Printf/User/*.s)
+EXAMPLE_S := $(filter-out $(GEN_ASM), $(wildcard USART_Printf/User/*.S USART_Printf/User/*.s))
 
 EXAMPLE_SRCS = $(EXAMPLE_C) $(EXAMPLE_S) $(GEN_ASM)
 

@@ -106,12 +106,6 @@ vm_str_error_message: .word 0
 
 
 starting_interpreter_string: .ascii "starting outer interpreter...\n\r\0"
-waiting_for_key_str: .ascii "waiting for key string...\n\0"
-
-error_msg_stack_overflow:  .ascii "data stack overflow\n\0"
-error_msg_stack_underflow: .ascii "data stack underflow\n\0"
-error_msg_return_stack_overflow:  .ascii "return stack overflow\n\0"
-error_msg_return_stack_underflow: .ascii "return stack underflow\n\0"
 
 show_data_stack_begin_str:   .ascii "data   [ \0"
 show_return_stack_begin_str: .ascii "return [ \0"
