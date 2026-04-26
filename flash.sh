@@ -1,2 +1,2 @@
 #!/usr/bin/env bash
-./wchisp flash USART_Printf.elf
+./wchisp flash Forth.elf
