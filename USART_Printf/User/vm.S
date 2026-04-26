@@ -82,13 +82,16 @@
 
 .global vm_run
 
-.data
+.section .bss
 vm_flags: .word 0
 
 vm_data_stack: .fill DATA_STACK_MAX_SIZE, CELL_SIZE, 0      # 32 cell stack size
 vm_return_stack: .fill RETURN_STACK_MAX_SIZE, CELL_SIZE, 0  # 64 cell return stack size
 
 vm_scratch_pad: .fill 64, 1, 0
+
+
+.section .text
 
 # dictionary
 vm_p_dictionary_start: .word 0
@@ -111,8 +114,7 @@ show_stack_end_str:          .ascii " ]\n\0"
 
 title_string: .string "Risc V Forth\n"
 
-
-.text
+.align 4
 
 vm_error_handler:
     li a1, UART_BASE
@@ -186,8 +188,8 @@ vm_run:
     li s4, 0
 
     la s5, _dataEnd
-1:
-    j 1b
+# 1:
+#     j 1b
 
     la s0, outerInterpreter_impl
     call outerInterpreter_impl

@@ -82,7 +82,7 @@
 
 .global vm_run
 
-
+.section .bss
 vm_flags: .word 0
 
 vm_data_stack: .fill DATA_STACK_MAX_SIZE, CELL_SIZE, 0      # 32 cell stack size
@@ -95,8 +95,8 @@ vm_p_dictionary_start: .word 0
 vm_p_dictionary_end: .word 0
 vm_str_error_message: .word 0
 
-
-starting_interpreter_string: .ascii "starting outer interpreter...\n\0"
+.section .text
+starting_interpreter_string: .ascii "starting outer interpreter...\n\r\0"
 waiting_for_key_str: .ascii "waiting for key string...\n\0"
 
 error_msg_stack_overflow:  .ascii "data stack overflow\n\0"
@@ -111,7 +111,6 @@ show_stack_end_str:          .ascii " ]\n\0"
 
 title_string: .string "Risc V Forth\n"
 
-.align 4
 
 .text
 
@@ -132,28 +131,46 @@ find_dict_end:
     SaveReturnAddress
 1:
     word_next a0, t0
+    PushReg a0
+    PushReg t0
+    
+    word_code a0, t0
+    mv a0, t0
+    li a1, UART_BASE
+    call puts
+    # li a0, UART_BASE
+    # call getc_block
+    # li a1, UART_BASE
+    # call putc
+
+    PopReg t0
+    PopReg a0
+    
     lw t0, 0(t0)
     mv a1, a0
     mv a0, t0
+    
+    
+    
     bne t0, zero, 1b
+    
     RestoreReturnAddress
     ret
 
 vm_run:
     SaveReturnAddress
 
-    la a0, starting_interpreter_string
-    li a1, UART_BASE
-    call puts
-1:
-    j 1b
-
     # init dictionary
     la t0, vm_p_dictionary_start
     la t1, emit
     sw t1, 0(t0)
 
-    mv a0, t1
+    la a0, starting_interpreter_string
+    li a1, UART_BASE
+    call puts
+    
+
+    la a0, emit
     call find_dict_end
 
     la t0, vm_p_dictionary_end
@@ -166,7 +183,6 @@ vm_run:
     li s4, 0
 
     la s5, _dataEnd
-
     la s0, outerInterpreter_impl
     call outerInterpreter_impl
 
