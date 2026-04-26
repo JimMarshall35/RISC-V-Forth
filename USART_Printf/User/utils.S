@@ -122,7 +122,7 @@ strlen:
     SaveReturnAddress
     li a1, 0
 1:
-    lw t0, 0(a0)
+    lb t0, 0(a0)
     beq t0, zero, 2f
     addi a1, a1, 1
     addi a0, a0, 1
@@ -170,12 +170,11 @@ strcmp_fs_cs:
     # a2 - F string length
     # Returns:
     # a3 - 1 if string 1 contents == string 2 contents else 0
-    #SaveReturnAddress
+    SaveReturnAddress
     #j c_fs_notequal
     mv t6, ra
     mv t4, a1
     mv t5, a0
-
 
     call strlen
 
@@ -197,12 +196,12 @@ strcmp_fs_cs:
 c_fs_equal:
     li a3, 1
     mv ra, t6
-    #RestoreReturnAddress
+    RestoreReturnAddress
     ret
 c_fs_notequal:
     li a3, 0
     mv ra, t6
-    #RestoreReturnAddress
+    RestoreReturnAddress
     ret
 
 fatoi_error_msg: .ascii "fatoi error\n\0"

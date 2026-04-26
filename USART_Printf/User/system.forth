@@ -295,9 +295,10 @@ asm_name cbyte
             ( enter entered )
             drop           ( )
             NEWLINE_CHAR emit        ( emit newline char )
+            CARRIAGE_RETURN_CHAR emit
             eval_  
             0 LineBufferSize_ !
-        else dup ENTER_CHAR = if
+        else dup BACKSPACE_CHAR = if
             ( backspace entered )
             drop
             doBackspace

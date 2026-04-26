@@ -38,28 +38,8 @@ const char* gTitleString = "RISC-V Forth CH32V203\n\r";
  */
 int main(void)
 {
-    NVIC_PriorityGroupConfig(NVIC_PriorityGroup_1);
-    SystemCoreClockUpdate();
-    Delay_Init();
     USART_Printf_Init(115200);
-    // printf("SystemClk:%d\r\n", SystemCoreClock);
-    // printf( "ChipID:%08x\r\n", DBGMCU_GetCHIPID() );
-    // printf("This is printf example\r\n");
-    /*
-        getc_block:
-    # Args:
-    # a0 - UART base address
-    # Returns:
-    # a0 - char from uart
 
-    putc:
-    # Args:
-    # a0 - character to output
-    # a1 - UART base address
-
-
-
-    */
     asm volatile (
         "li sp, %0\n\t"
         "li a1, %1\n\t"

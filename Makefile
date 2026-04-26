@@ -31,6 +31,7 @@ INCLUDES = $(EXAMPLE_INCLUDES)
 # Source files
 
 GEN_ASM = USART_Printf/User/system.S
+FORTH_SRC = USART_Printf/User/system.forth
 
 # full library
 LIBRARY_C = \
@@ -64,13 +65,9 @@ $(EXAMPLE).elf: $(EXAMPLE_OBJS)
 %.o: %.S
 	$(CC) $(CFLAGS) $(INCLUDES) -c $< -o $@
 
-# Binary output (optional)
-$(EXAMPLE).bin: $(EXAMPLE).elf
-	$(OBJCOPY) -O binary $< $@
-
 USART_Printf/User/system.o: $(GEN_ASM)
 
-$(GEN_ASM): tools/Compiler.py
+$(GEN_ASM): tools/Compiler.py $(FORTH_SRC)
 	python3 tools/Compiler.py USART_Printf/User/system.forth -a USART_Printf/User/vm.S -o $@
 
 # Clean

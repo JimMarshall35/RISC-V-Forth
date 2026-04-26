@@ -116,7 +116,7 @@ error_msg_return_stack_underflow: .ascii "return stack underflow\n\0"
 show_data_stack_begin_str:   .ascii "data   [ \0"
 show_return_stack_begin_str: .ascii "return [ \0"
 show_comma_sep_str:          .ascii ", \0"
-show_stack_end_str:          .ascii " ]\n\0"
+show_stack_end_str:          .ascii " ]\n\r\0"
 
 title_string: .string "Risc V Forth\n"
 
@@ -279,6 +279,10 @@ word_header_first emit,   "emit",     0, key
 word_header       key,    "key",      0, loadCell, emit
     li a0, UART_BASE
     call getc_block         # char in a0
+    # call print_int
+    # la a0, linened
+    # li a1, UART_BASE
+    # call puts
     PushDataStack a0
     end_word
                                            
@@ -409,8 +413,24 @@ word_header findXT, "!'", 0, forth_and, dup2
     
     la t4, vm_p_dictionary_end
     lw t4, 0(t4)
+
+#     mv a0, t4
+#     call print_int
+# 1:
+#     j 1b
 1:
     word_code t4, t2
+
+    # DEBUG BEGIN
+    # PushReg t2
+    # mv a0, t2
+    # li a1, UART_BASE
+    # call puts
+    # la a0, linened
+    # li a1, UART_BASE
+    # call puts
+    # PopReg t2
+    # DEBUG_END
 
     mv a0, t2
     mv a1, t5
@@ -425,6 +445,8 @@ word_header findXT, "!'", 0, forth_and, dup2
     PopReg t6
     PopReg t5
     PopReg t4
+# 1:
+#     j 1b
     
     bne a3, zero, 3f # its a match! 
     lw t1, OFFSET_PREV(t4)
@@ -494,7 +516,7 @@ word_header forth_fatoi, "$", 0, show, pop_return
 # Its good to have this one NOT in forth, because you can rely on it working correctly more
 # knowing that its not part of the forth system and it is very useful for debugging. There is just
 # less things to go wrong this way.
-word_header show, "s", 0, execute, forth_fatoi
+word_header show, "show", 0, execute, forth_fatoi
     # DATA STACK
     la a0, show_data_stack_begin_str
     li a1, UART_BASE
