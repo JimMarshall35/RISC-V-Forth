@@ -339,7 +339,7 @@ asm_name cbyte
 
 : : ( pHeader )
     ( Implementation is for COMPRESSED INSTRUCTION FORMAT RISC-V )
-    2 alignHere
+    4 alignHere
     setCompile
     compileHeader
     ( Eventually I will write an assembler library and this raw machine code         )
@@ -351,6 +351,7 @@ asm_name cbyte
     0x13 c, 0x04 c, 0x04 c, 0x01 c, ( mv	s0,s0    )
     0x83 c, 0x22 c, 0x04 c, 0x00 c, ( lw	t0,0[s0] )
     0xE7 c, 0x80 c, 0x02 c, 0x00 c, ( jalr	t0       )
+    4 alignHere
 ;
 
 asm_name bw
