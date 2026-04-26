@@ -5,8 +5,6 @@ OBJCOPY = riscv-none-elf-objcopy
 # Targets
 EXAMPLE = USART_Printf
 
-FORTH = Forth
-
 # ===== Select startup file here =====
 # Options: D6, D8, D8W
 STARTUP ?= D6
@@ -32,6 +30,8 @@ EXAMPLE_INCLUDES = $(LIBRARY_INCLUDES) -IUSART_Printf/User
 INCLUDES = $(EXAMPLE_INCLUDES)
 # Source files
 
+GEN_ASM = USART_Printf/User/system.S
+
 # full library
 LIBRARY_C = \
 	$(wildcard SRC/Core/*.c) \
@@ -41,21 +41,13 @@ LIBRARY_C = \
 
 # example
 EXAMPLE_C = $(wildcard USART_Printf/User/*.c)  $(LIBRARY_C)
-EXAMPLE_S := $(wildcard USART_Printf/User/*.S USART_Printf/User/*.s) 
+EXAMPLE_S := $(wildcard USART_Printf/User/*.S USART_Printf/User/*.s)
 
-EXAMPLE_SRCS = $(EXAMPLE_C) $(EXAMPLE_S)
-
-# minimal src
-MINMAL_SRCS = $(wildcard MINIMAL_SRC/*.S) $(STARTUP_FILE) 
-
-# forth
-FORTH_SRCS = $(wildcard Forth/*.S) $(MINMAL_SRCS)
+EXAMPLE_SRCS = $(EXAMPLE_C) $(EXAMPLE_S) $(GEN_ASM)
 
 # Object files
 EXAMPLE_OBJS = $(EXAMPLE_SRCS:.c=.o)
 EXAMPLE_OBJS := $(EXAMPLE_OBJS:.S=.o)
-
-FORTH_OBJS = $(FORTH_SRCS:.S=.o)
 
 # Default target
 all: $(EXAMPLE).elf #$(FORTH).elf
@@ -63,11 +55,6 @@ all: $(EXAMPLE).elf #$(FORTH).elf
 # Link
 $(EXAMPLE).elf: $(EXAMPLE_OBJS)
 	$(CC) $(CFLAGS) $(LDFLAGS) $(EXAMPLE_OBJS) -o $@ 
-
-
-$(FORTH).elf: $(FORTH_OBJS)
-	$(CC) $(CFLAGS) $(LDFLAGS) $(FORTH_OBJS) -o $@ 
-
 
 # Compile C
 %.o: %.c
@@ -81,11 +68,13 @@ $(FORTH).elf: $(FORTH_OBJS)
 $(EXAMPLE).bin: $(EXAMPLE).elf
 	$(OBJCOPY) -O binary $< $@
 
-$(FORTH).bin: $(FORTH).elf
-	$(OBJCOPY) -O binary $< $@
+USART_Printf/User/system.o: $(GEN_ASM)
+
+$(GEN_ASM): tools/Compiler.py
+	python3 tools/Compiler.py USART_Printf/User/system.forth -a USART_Printf/User/vm.S -o $@
 
 # Clean
 clean:
-	rm -f $(EXAMPLE_OBJS) $(EXAMPLE).elf $(EXAMPLE).bin $(EXAMPLE).map $(FORTH_OBJS) $(FORTH).elf $(FORTH).bin $(FORTH).map
+	rm -f $(EXAMPLE_OBJS) $(EXAMPLE).elf $(EXAMPLE).bin $(EXAMPLE).map $(GEN_ASM)
 
 .PHONY: all clean

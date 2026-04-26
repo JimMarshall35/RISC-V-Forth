@@ -155,11 +155,11 @@ div \regOut, \regSize, \regTemp
     la s0, \name\()_ThreadBegin
     lw t4, 0(s0)
     # DEBUG TRACE CODE BEGIN
-    mv a0, t4
-    call print_int
-    la a0, linened2
-    li a1, UART_BASE2
-    call puts
+    # mv a0, t4
+    # call print_int
+    # la a0, linened2
+    # li a1, UART_BASE2
+    # call puts
     # DEBUG TRACE CODE END
     jalr ra, t4, 0
     .balign 4
@@ -194,11 +194,11 @@ div \regOut, \regSize, \regTemp
     addi s0, s0, CELL_SIZE
     lw t4, 0(s0)
     # DEBUG TRACE CODE BEGIN
-    mv a0, t4
-    call print_int
-    la a0, linened2
-    li a1, UART_BASE2
-    call puts
+    # mv a0, t4
+    # call print_int
+    # la a0, linened2
+    # li a1, UART_BASE2
+    # call puts
     # DEBUG TRACE CODE END
     jalr ra, t4, 0
 .endm

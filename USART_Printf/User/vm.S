@@ -62,61 +62,8 @@
 .global modulo_impl
 .global forth_mul_impl
 
-
-.global emit
-.global key
-.global loadCell
-.global store
-.global loadByte
-.global storeByte
-.global branchIfZero
-.global branch
-.global forth_add
-.global literal
-.global dup
-.global return
-.global forth_minus
-.global swap
-.global drop
-.global dup2
-.global findXT
-.global doWordFound
-.global flags
-.global setCompile
-.global setInterpret
-.global forth_and
-.global forth_or
-.global get_compile_bit
-.global forth_xor
-.global get_comment_bit
-.global comment_on
-.global comment_off
-.global here
-.global rot
-.global push_return
-.global pop_return
-.global forth_fatoi
-.global show
-.global execute
-.global showR
-.global setHere
-.global return_stack_index
-.global getDictionaryEnd
-.global setDictionaryEnd
-.global tokenBufferToHeaderCode
-.global toCString
-.global compileWord
-.global endWord
-.global getXTHeader
-.global isXTImmediate
-.global setNumInputHex
-.global setNumInputDec
-.global equals
-.global notEquals
-.global lessThan
-.global greaterThan
-.global modulo
-.global forth_mul
+.global vm_return_stack
+.global vm_data_stack
 
 
 .global last_vm_word
@@ -225,6 +172,8 @@ mem_end: .ascii "memory end: \0"
 dict_end: .ascii "dict end: \0"
 
 linened: .ascii "\n\r\0"
+debug_store1: .ascii "Storing word \0"
+debug_store2: .ascii " At address \0"
 .balign 4
 
 vm_run:
@@ -315,7 +264,7 @@ vm_run:
     call puts
 
     # DEBUG END
-    
+
     call outerInterpreter_impl
 
     RestoreReturnAddress
@@ -342,6 +291,32 @@ word_header loadCell, "@", 0, store, key
 word_header store, "!!", 0, loadByte, loadCell
     PopDataStack t2
     PopDataStack t3
+    # store debug
+    # PushReg t2
+    # PushReg t3
+    # mv t4, t3
+    # mv t5, t2
+
+    # la a0, debug_store1
+    # li a1, UART_BASE
+    # call puts
+
+    # mv a0, t4
+    # call print_int
+
+    # la a0, debug_store2
+    # li a1, UART_BASE
+    # call puts
+
+    # mv a0, t5
+    # call print_int
+    
+    # la a0, linened
+    # li a1, UART_BASE
+    # call puts
+    # PopReg t3
+    # PopReg t2
+    # store debug end
     sw t3, 0(t2)
     end_word
     
