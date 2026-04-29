@@ -350,7 +350,7 @@ asm_name cbyte
     0x23 c, 0xA0 c, 0x82 c, 0x00 c, ( sw	s0,0[t0]         )
     0x11 c, 0x0A c,                 ( addi	s4,s4,4          )
     0x17 c, 0x04 c, 0x00 c, 0x00 c, ( auipc	s0,0x0           ) 
-    0x39 c, 0x04 c,                 ( addi	s0,s0,16         )
+    0x39 c, 0x04 c,                 ( addi	s0,s0, 14        )
     0x83 c, 0x2e c, 0x04 c, 0x00 c, ( lw	t0,0[s0]         )
     0xE7 c, 0x80 c, 0x0e c, 0x00 c, ( jalr	t0               )
     4 alignHere
@@ -387,7 +387,7 @@ asm_name ew
 
 : then ( ifBranchAddressToBackpatch -- )
     dup
-    here swap -
+    here swap -0x17
     swap !
 ; immediate 
 
@@ -434,3 +434,23 @@ asm_name ew
     ( compile code to clean up i and limit from int stack now that the loop has ended ) 
     dropStr_ ' dup , , 
 ; immediate 
+
+: printc ( cstring -- )
+    begin 
+        dup c@ emit
+        1 +
+        dup c@ logic_not
+    until
+    drop
+;
+
+: showWords
+    getDictionaryEnd   ( pEnd pEnd )
+    begin
+        dup
+        printc cr              ( pEnd ) 
+        getHeaderPrev          ( pEnd->prev ) 
+        dup 0 =                ( pEnd->prev pEnd->prev==0 )
+    until
+    drop
+;
