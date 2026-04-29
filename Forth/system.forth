@@ -344,14 +344,16 @@ asm_name cbyte
     ( Implementation is for COMPRESSED INSTRUCTION FORMAT RISC-V )
     4 alignHere
     setCompile
-    compileHeader
-    0xB3 c, 0x82 c, 0x49 c, 0x01 c, ( add	t0,s3,s4         )
-    0x23 c, 0xA0 c, 0x82 c, 0x00 c, ( sw	s0,0[t0]         )
-    0x11 c, 0x0A c,                 ( addi	s4,s4,4          )
-    0x17 c, 0x04 c, 0x00 c, 0x00 c, ( auipc	s0,0x0           ) 
-    0x39 c, 0x04 c,                 ( addi	s0,s0, 14        )
-    0x83 c, 0x2e c, 0x04 c, 0x00 c, ( lw	t0,0[s0]         )
-    0xE7 c, 0x80 c, 0x0e c, 0x00 c, ( jalr	t0               )
+    compileHeader                   ( push s0 to return stack            )
+    0xB3 c, 0x82 c, 0x49 c, 0x01 c, ( add	t0,s3,s4                     )
+    0x23 c, 0xA0 c, 0x82 c, 0x00 c, ( sw	s0,0[t0]                     )
+    0x11 c, 0x0A c,                 ( addi	s4,s4,4                      )
+                                    ( set s0 to point to start of thread )
+    0x17 c, 0x04 c, 0x00 c, 0x00 c, ( auipc	s0,0x0                       ) 
+    0x39 c, 0x04 c,                 ( addi	s0,s0, 14                    )
+                                    ( jump into first word in thread     )
+    0x83 c, 0x2e c, 0x04 c, 0x00 c, ( lw	t0,0[s0]                     )
+    0xE7 c, 0x80 c, 0x0e c, 0x00 c, ( jalr	t0                           )
     4 alignHere
 ;
 
@@ -453,6 +455,7 @@ asm_name ew
     setDictionaryEnd
 ;
 
+
 : printc ( cstring -- )
     begin 
         dup c@ emit
@@ -466,9 +469,9 @@ asm_name ew
     getDictionaryEnd   ( pEnd pEnd )
     begin
         dup
-        dup . 32 emit printc cr              ( pEnd ) 
-        getHeaderPrev          ( pEnd->prev ) 
-        dup 0 =                ( pEnd->prev pEnd->prev==0 )
+        dup . SPACE_CHAR emit printc cr              ( pEnd ) 
+        getHeaderPrev                                ( pEnd->prev ) 
+        dup 0 =                                      ( pEnd->prev pEnd->prev==0 )
     until
     drop
 ;

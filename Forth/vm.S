@@ -741,15 +741,30 @@ word_header forth_mul, "!*", 0, forth_div, modulo
     PushDataStack t2
     end_word
 
-word_header forth_div, "/", 0, forth_print_int, forth_mul
+word_header forth_div, "/", 0, shift_left, forth_mul
     PopDataStack t1
     PopDataStack t2
     div t2, t2, t1
     PushDataStack t2
     end_word
 
+word_header shift_left, "!<!<", 0, shift_right, forth_div
+    PopDataStack t1
+    PopDataStack t2
+    sll t2, t2, t1
+    PushDataStack t2
+    end_word
+
+word_header shift_right, "!>!>", 0, forth_print_int, shift_left
+    PopDataStack t1
+    PopDataStack t2
+    srl t2, t2, t1
+    PushDataStack t2
+    end_word
+
+
 last_vm_word: # IMPORTANT: KEEP THIS LABEL POINTING TO THE LAST VM WORD.
-word_header forth_print_int, ".", 0, first_system_word, forth_div
+word_header forth_print_int, ".", 0, first_system_word, shift_right
     PopDataStack a0
     call print_int
     end_word
