@@ -345,7 +345,6 @@ asm_name cbyte
     4 alignHere
     setCompile
     compileHeader
-    4 alignHere
     0xB3 c, 0x82 c, 0x49 c, 0x01 c, ( add	t0,s3,s4         )
     0x23 c, 0xA0 c, 0x82 c, 0x00 c, ( sw	s0,0[t0]         )
     0x11 c, 0x0A c,                 ( addi	s4,s4,4          )
@@ -435,6 +434,25 @@ asm_name ew
     dropStr_ ' dup , , 
 ; immediate 
 
+: create ( consumes next token )
+    4 alignHere
+    ( setCompile )
+    compileHeader
+    ( load data after machine code into t3 )
+    0x01 c, 0x00 c,
+    0x17 c, 0x0e c, 0x00 c, 0x00 c, ( auipc	t3,0x0    )
+    0x69 c, 0x0e c,                 ( addi	t3,t3,26  )
+    ( push t3 to the data stack )
+    0xb3 c, 0x82 c, 0x24 c, 0x01 c, ( add	t0,s1,s2  )
+    0x23 c, 0xa0 c, 0xc2 c, 0x01 c, ( sw	t3,0[t0]  )
+    0x11 c, 0x09 c,                 ( addi  s2, s2, 4 )
+    ( end_word macro )
+    0x11 c, 0x04 c,                 ( addi	s0,s0,4   )
+    0x83 c, 0x2e c, 0x04 c, 0x00 c, ( lw	t4,0(s0)  )
+    0xe7 c, 0x80 c, 0x0e c, 0x00 c, ( jalr	t4        )
+    setDictionaryEnd
+;
+
 : printc ( cstring -- )
     begin 
         dup c@ emit
@@ -448,7 +466,7 @@ asm_name ew
     getDictionaryEnd   ( pEnd pEnd )
     begin
         dup
-        printc cr              ( pEnd ) 
+        dup . 32 emit printc cr              ( pEnd ) 
         getHeaderPrev          ( pEnd->prev ) 
         dup 0 =                ( pEnd->prev pEnd->prev==0 )
     until
