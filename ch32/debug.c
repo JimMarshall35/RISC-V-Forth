@@ -25,11 +25,11 @@ static uint16_t p_ms = 0;
  *
  * @return  none
  */
-void Delay_Init(void)
-{
-    p_us = SystemCoreClock / 8000000;
-    p_ms = (uint16_t)p_us * 1000;
-}
+// void Delay_Init(void)
+// {
+//     p_us = SystemCoreClock / 8000000;
+//     p_ms = (uint16_t)p_us * 1000;
+// }
 
 /*********************************************************************
  * @fn      Delay_Us
@@ -40,20 +40,20 @@ void Delay_Init(void)
  *
  * @return  None
  */
-void Delay_Us(uint32_t n)
-{
-    uint32_t i;
+// void Delay_Us(uint32_t n)
+// {
+//     uint32_t i;
 
-    SysTick->SR &= ~(1 << 0);
-    i = (uint32_t)n * p_us;
+//     SysTick->SR &= ~(1 << 0);
+//     i = (uint32_t)n * p_us;
 
-    SysTick->CMP = i;
-    SysTick->CTLR |= (1 << 4);
-    SysTick->CTLR |= (1 << 5) | (1 << 0);
+//     SysTick->CMP = i;
+//     SysTick->CTLR |= (1 << 4);
+//     SysTick->CTLR |= (1 << 5) | (1 << 0);
 
-    while((SysTick->SR & (1 << 0)) != (1 << 0));
-    SysTick->CTLR &= ~(1 << 0);
-}
+//     while((SysTick->SR & (1 << 0)) != (1 << 0));
+//     SysTick->CTLR &= ~(1 << 0);
+// }
 
 /*********************************************************************
  * @fn      Delay_Ms
@@ -64,20 +64,20 @@ void Delay_Us(uint32_t n)
  *
  * @return  None
  */
-void Delay_Ms(uint32_t n)
-{
-    uint32_t i;
+// void Delay_Ms(uint32_t n)
+// {
+//     uint32_t i;
 
-    SysTick->SR &= ~(1 << 0);
-    i = (uint32_t)n * p_ms;
+//     SysTick->SR &= ~(1 << 0);
+//     i = (uint32_t)n * p_ms;
 
-    SysTick->CMP = i;
-    SysTick->CTLR |= (1 << 4);
-    SysTick->CTLR |= (1 << 5) | (1 << 0);
+//     SysTick->CMP = i;
+//     SysTick->CTLR |= (1 << 4);
+//     SysTick->CTLR |= (1 << 5) | (1 << 0);
 
-    while((SysTick->SR & (1 << 0)) != (1 << 0));
-    SysTick->CTLR &= ~(1 << 0);
-}
+//     while((SysTick->SR & (1 << 0)) != (1 << 0));
+//     SysTick->CTLR &= ~(1 << 0);
+// }
 
 /*********************************************************************
  * @fn      USART_Printf_Init
@@ -152,12 +152,12 @@ void USART_Printf_Init(uint32_t baudrate)
  *
  * @return  None
  */
-void SDI_Printf_Enable(void)
-{
-    *(DEBUG_DATA0_ADDRESS) = 0;
-    Delay_Init();
-    Delay_Ms(1);
-}
+// void SDI_Printf_Enable(void)
+// {
+//     *(DEBUG_DATA0_ADDRESS) = 0;
+//     Delay_Init();
+//     Delay_Ms(1);
+// }
 
 /*********************************************************************
  * @fn      _write
@@ -169,80 +169,80 @@ void SDI_Printf_Enable(void)
  *
  * @return  size: Data length
  */
-__attribute__((used))
-int _write(int fd, char *buf, int size)
-{
-    int i = 0;
+// __attribute__((used))
+// int _write(int fd, char *buf, int size)
+// {
+//     int i = 0;
 
-#if (SDI_PRINT == SDI_PR_OPEN)
-    int writeSize = size;
+// #if (SDI_PRINT == SDI_PR_OPEN)
+//     int writeSize = size;
 
-    do
-    {
+//     do
+//     {
 
-        /**
-         * data0  data1 8 byte
-         * data0 The storage length of the lowest byte, with a maximum of 7 bytes.
-         */
+//         /**
+//          * data0  data1 8 byte
+//          * data0 The storage length of the lowest byte, with a maximum of 7 bytes.
+//          */
 
-        while( (*(DEBUG_DATA0_ADDRESS) != 0u))
-        {
+//         while( (*(DEBUG_DATA0_ADDRESS) != 0u))
+//         {
 
-        }
+//         }
 
-        if(writeSize>7)
-        {
-            *(DEBUG_DATA1_ADDRESS) = (*(buf+i+3)) | (*(buf+i+4)<<8) | (*(buf+i+5)<<16) | (*(buf+i+6)<<24);
-            *(DEBUG_DATA0_ADDRESS) = (7u) | (*(buf+i)<<8) | (*(buf+i+1)<<16) | (*(buf+i+2)<<24);
+//         if(writeSize>7)
+//         {
+//             *(DEBUG_DATA1_ADDRESS) = (*(buf+i+3)) | (*(buf+i+4)<<8) | (*(buf+i+5)<<16) | (*(buf+i+6)<<24);
+//             *(DEBUG_DATA0_ADDRESS) = (7u) | (*(buf+i)<<8) | (*(buf+i+1)<<16) | (*(buf+i+2)<<24);
 
-            i += 7;
-            writeSize -= 7;
-        }
-        else
-        {
-            *(DEBUG_DATA1_ADDRESS) = (*(buf+i+3)) | (*(buf+i+4)<<8) | (*(buf+i+5)<<16) | (*(buf+i+6)<<24);
-            *(DEBUG_DATA0_ADDRESS) = (writeSize) | (*(buf+i)<<8) | (*(buf+i+1)<<16) | (*(buf+i+2)<<24);
+//             i += 7;
+//             writeSize -= 7;
+//         }
+//         else
+//         {
+//             *(DEBUG_DATA1_ADDRESS) = (*(buf+i+3)) | (*(buf+i+4)<<8) | (*(buf+i+5)<<16) | (*(buf+i+6)<<24);
+//             *(DEBUG_DATA0_ADDRESS) = (writeSize) | (*(buf+i)<<8) | (*(buf+i+1)<<16) | (*(buf+i+2)<<24);
 
-            writeSize = 0;
-        }
+//             writeSize = 0;
+//         }
 
-    } while (writeSize);
+//     } while (writeSize);
 
 
-#else
-    for(i = 0; i < size; i++){
-#if(DEBUG == DEBUG_UART1)
-        while(USART_GetFlagStatus(USART1, USART_FLAG_TC) == RESET);
-        USART_SendData(USART1, *buf++);
-#elif(DEBUG == DEBUG_UART2)
-        while(USART_GetFlagStatus(USART2, USART_FLAG_TC) == RESET);
-        USART_SendData(USART2, *buf++);
-#elif(DEBUG == DEBUG_UART3)
-        while(USART_GetFlagStatus(USART3, USART_FLAG_TC) == RESET);
-        USART_SendData(USART3, *buf++);
-#endif
-    }
-#endif
-    return size;
-}
+// #else
+//     for(i = 0; i < size; i++){
+// #if(DEBUG == DEBUG_UART1)
+//         while(USART_GetFlagStatus(USART1, USART_FLAG_TC) == RESET);
+//         USART_SendData(USART1, *buf++);
+// #elif(DEBUG == DEBUG_UART2)
+//         while(USART_GetFlagStatus(USART2, USART_FLAG_TC) == RESET);
+//         USART_SendData(USART2, *buf++);
+// #elif(DEBUG == DEBUG_UART3)
+//         while(USART_GetFlagStatus(USART3, USART_FLAG_TC) == RESET);
+//         USART_SendData(USART3, *buf++);
+// #endif
+//     }
+// #endif
+//     return size;
+// }
 
-/*********************************************************************
- * @fn      _sbrk
- *
- * @brief   Change the spatial position of data segment.
- *
- * @return  size: Data length
- */
-__attribute__((used))
-void *_sbrk(ptrdiff_t incr)
-{
-    extern char _end[];
-    extern char _heap_end[];
-    static char *curbrk = _end;
+// /*********************************************************************
+//  * @fn      _sbrk
+//  *
+//  * @brief   Change the spatial position of data segment.
+//  *
+//  * @return  size: Data length
+//  */
+// __attribute__((used))
+// void *_sbrk(ptrdiff_t incr)
+// {
+//     extern char _end[];
+//     extern char _heap_end[];
+//     static char *curbrk = _end;
 
-    if ((curbrk + incr < _end) || (curbrk + incr > _heap_end))
-    return NULL - 1;
+//     if ((curbrk + incr < _end) || (curbrk + incr > _heap_end))
+//     return NULL - 1;
 
-    curbrk += incr;
-    return curbrk - incr;
-}
+//     curbrk += incr;
+//     return curbrk - incr;
+// }

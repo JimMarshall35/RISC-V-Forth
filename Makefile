@@ -16,16 +16,11 @@ CFLAGS = -march=rv32imac_zicsr_zifencei -mabi=ilp32 -msmall-data-limit=8 -msave-
          -Os -fmessage-length=0 -fsigned-char -ffunction-sections -fdata-sections \
          -fno-common -Wunused -Wuninitialized -g
 
-LDFLAGS = -T SRC/Ld/Link.ld -nostartfiles -Xlinker --gc-sections -Wl,-Map,"Forth.map" --specs=nano.specs --specs=nosys.specs
+LDFLAGS = -T ch32/Link.ld -nostartfiles -Xlinker --gc-sections -Wl,-Map,"Forth.map" --specs=nano.specs --specs=nosys.specs
 
 # Include paths
-LIBRARY_INCLUDES = \
-	-ISRC/Core \
-	-ISRC/Debug \
-	-ISRC/Peripheral/inc
-	
 
-FORTH_INCLUDES = $(LIBRARY_INCLUDES) -IForth
+FORTH_INCLUDES = -IForth -Ich32
 
 INCLUDES = $(FORTH_INCLUDES)
 # Source files
@@ -34,17 +29,12 @@ GEN_ASM = Forth/system.S
 FORTH_SRC = Forth/system.forth
 
 # full library
-LIBRARY_C = \
-	$(wildcard SRC/Core/*.c) \
-	$(wildcard SRC/Debug/*.c) \
-	$(wildcard SRC/Peripheral/src/*.c) \
-	$(STARTUP_FILE) \
 
 # FORTH
-FORTH_C = $(wildcard Forth/*.c)  $(LIBRARY_C)
+CH32_SRC = $(wildcard ch32/*.c) $(wildcard ch32/*.S)
 FORTH_S := $(filter-out $(GEN_ASM), $(wildcard Forth/*.S Forth/*.s))
 
-FORTH_SRCS = $(FORTH_C) $(FORTH_S) $(GEN_ASM)
+FORTH_SRCS = $(CH32_SRC) $(FORTH_S) $(GEN_ASM)
 
 # Object files
 FORTH_OBJS = $(FORTH_SRCS:.c=.o)

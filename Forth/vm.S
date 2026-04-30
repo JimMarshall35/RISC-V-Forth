@@ -767,7 +767,7 @@ word_header shift_right, "!>!>", 0, roll, shift_left
     # s1 - data stack base pointer
     # s2 - data stack size
 
-word_header roll "roll", 0, forth_print_int, shift_right
+word_header roll, "roll", 0, forth_print_int, shift_right
     lw t0, 0(s1)  # store the first value in the stack for later
     add t1, s1, s2 # t1 = ptr end of stack
     addi t2, s1, 4 # t2 = read ptr
