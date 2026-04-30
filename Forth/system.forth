@@ -340,11 +340,8 @@ asm_name cbyte
     0 until
 ;
 
-: : ( pHeader )
-    ( Implementation is for COMPRESSED INSTRUCTION FORMAT RISC-V )
-    4 alignHere
-    setCompile
-    compileHeader                   ( push s0 to return stack            )
+: enter_word_macro ( -- ) 
+                                    ( push s0 to return stack            )
     0xB3 c, 0x82 c, 0x49 c, 0x01 c, ( add	t0,s3,s4                     )
     0x23 c, 0xA0 c, 0x82 c, 0x00 c, ( sw	s0,0[t0]                     )
     0x11 c, 0x0A c,                 ( addi	s4,s4,4                      )
@@ -354,6 +351,14 @@ asm_name cbyte
                                     ( jump into first word in thread     )
     0x83 c, 0x2e c, 0x04 c, 0x00 c, ( lw	t0,0[s0]                     )
     0xE7 c, 0x80 c, 0x0e c, 0x00 c, ( jalr	t0                           )
+;
+
+: : ( pHeader )
+    ( Implementation is for COMPRESSED INSTRUCTION FORMAT RISC-V )
+    4 alignHere
+    setCompile
+    compileHeader                   
+    enter_word_macro
     4 alignHere
 ;
 
@@ -440,19 +445,12 @@ asm_name ew
     4 alignHere
     ( setCompile )
     compileHeader
-    ( load data after machine code into t3 )
-    0x01 c, 0x00 c,
-    0x17 c, 0x0e c, 0x00 c, 0x00 c, ( auipc	t3,0x0    )
-    0x69 c, 0x0e c,                 ( addi	t3,t3,26  )
-    ( push t3 to the data stack )
-    0xb3 c, 0x82 c, 0x24 c, 0x01 c, ( add	t0,s1,s2  )
-    0x23 c, 0xa0 c, 0xc2 c, 0x01 c, ( sw	t3,0[t0]  )
-    0x11 c, 0x09 c,                 ( addi  s2, s2, 4 )
-    ( end_word macro )
-    0x11 c, 0x04 c,                 ( addi	s0,s0,4   )
-    0x83 c, 0x2e c, 0x04 c, 0x00 c, ( lw	t4,0(s0)  )
-    0xe7 c, 0x80 c, 0x0e c, 0x00 c, ( jalr	t4        )
     setDictionaryEnd
+    enter_word_macro
+    
+    LiteralStr_ ' ,
+    here 8 + ,
+    ReturnStr_ ' ,
 ;
 
 

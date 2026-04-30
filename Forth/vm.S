@@ -64,10 +64,12 @@
 .global newline_impl
 .global forth_print_int_impl
 .global forth_div_impl
+.global shift_right_impl
+.global shift_left_impl
+.global roll_impl
 
 .global vm_return_stack
 .global vm_data_stack
-
 
 .global last_vm_word
 
@@ -755,16 +757,35 @@ word_header shift_left, "!<!<", 0, shift_right, forth_div
     PushDataStack t2
     end_word
 
-word_header shift_right, "!>!>", 0, forth_print_int, shift_left
+word_header shift_right, "!>!>", 0, roll, shift_left
     PopDataStack t1
     PopDataStack t2
     srl t2, t2, t1
     PushDataStack t2
     end_word
 
+    # s1 - data stack base pointer
+    # s2 - data stack size
+
+word_header roll "roll", 0, forth_print_int, shift_right
+    lw t0, 0(s1)  # store the first value in the stack for later
+    add t1, s1, s2 # t1 = ptr end of stack
+    addi t2, s1, 4 # t2 = read ptr
+1:
+    addi t3, t2, -4  # t3 = write ptr
+    lw t4, 0(t2)    # iteration stack value
+    sw t4, 0(t3)    # store in "empty hole"
+    addi t2, t2, 4  # advance read ptr
+    bne t2, t1, 1b  # branch if we've not reached the ehd
+    addi t1, t1, -4 # pointer to the end
+    sw t0, 0(t1)    # write first stack value at the end
+    end_word
+
+.balign 4
+    
 
 last_vm_word: # IMPORTANT: KEEP THIS LABEL POINTING TO THE LAST VM WORD.
-word_header forth_print_int, ".", 0, first_system_word, shift_right
+word_header forth_print_int, ".", 0, first_system_word, roll
     PopDataStack a0
     call print_int
     end_word
