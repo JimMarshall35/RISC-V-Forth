@@ -18,6 +18,8 @@
 
 #define COMPILE_BIT 1
 
+#define SECONDARY_WORD_MACRO_CODE_SIZE 24
+
 buf LineBuffer_ 128
 var LineBufferSize_ 0
 
@@ -29,6 +31,12 @@ var LineBufferI_ 0
 var EvalErrorFlag_ 0
 
 var flags 0
+
+string do_doesStr_ "do_does>"
+
+string JumpStr_ "jp"
+
+string PCStr_ "pc"
 
 string LiteralStr_ "literal"
 
@@ -53,6 +61,8 @@ string twodupStr_ "2dup"
 string equalsStr_ "="
 
 string dropStr_ "drop"
+
+string showStr_ "show"
 
 ( flags )
 
@@ -169,6 +179,8 @@ asm_name lte
 : getXTImmediate ( xt -- 0IfNotImmediate ) getXTHeader getHeaderImmediate ;
 
 : tokenBufferToHeaderCode ( buffer -- ) TokenBufferSize_ @ swap Tokenbuffer_ swap toCString ;
+
+: headerToThreadStart ( pHeader -- )  HEADER_SIZE SECONDARY_WORD_MACRO_CODE_SIZE + + ;
 
 : , ( word2compile -- ) here ! here CELL_SIZE + setHere ;
 
@@ -445,12 +457,13 @@ asm_name ew
     4 alignHere
     ( setCompile )
     compileHeader
-    setDictionaryEnd
     enter_word_macro
-    
     LiteralStr_ ' ,
-    here 8 + ,
+    here 12 + ,
+    here show drop
     ReturnStr_ ' ,
+    0 ,
+    setDictionaryEnd
 ;
 
 
@@ -473,3 +486,29 @@ asm_name ew
     until
     drop
 ;
+
+: do_does> ( does_code -- )
+    getDictionaryEnd              ( does_code pHeaderEnd )
+    headerToThreadStart           ( does_code pThreadStart )
+    begin 
+        dup                       ( does_code pThreadStart pThreadStart )
+        @ ReturnStr_ ' = if         ( does_code pThreadStart )
+            dup JumpStr_ ' swap show ! 
+            4 + !
+            r
+        then
+        4 +                       ( does_code pThreadStart+4 )
+        0
+    until
+;
+
+asm_name do_does
+
+: does>
+    LiteralStr_ ' ,
+    here 8 + ,
+    do_doesStr_ ' ,
+    ReturnStr_ ' ,
+; immediate
+
+asm_name does

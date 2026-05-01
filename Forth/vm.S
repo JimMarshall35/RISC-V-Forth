@@ -67,6 +67,8 @@
 .global shift_right_impl
 .global shift_left_impl
 .global roll_impl
+.global pc_impl
+.global jump_impl
 
 .global vm_return_stack
 .global vm_data_stack
@@ -767,7 +769,7 @@ word_header shift_right, "!>!>", 0, roll, shift_left
     # s1 - data stack base pointer
     # s2 - data stack size
 
-word_header roll, "roll", 0, forth_print_int, shift_right
+word_header roll, "roll", 0, jump, shift_right
     lw t0, 0(s1)  # store the first value in the stack for later
     add t1, s1, s2 # t1 = ptr end of stack
     addi t2, s1, 4 # t2 = read ptr
@@ -783,9 +785,18 @@ word_header roll, "roll", 0, forth_print_int, shift_right
 
 .balign 4
     
+word_header jump, "jp", 0, pc, roll
+    # branch is for PC relative branches, this is for branching to an absolute address
+    addi s0, s0, CELL_SIZE # get literal
+    lw s0, 0(s0)
+    end_word
+    
+word_header pc, "pc", 0, forth_print_int, jump
+    PushDataStack s0
+    end_word
 
 last_vm_word: # IMPORTANT: KEEP THIS LABEL POINTING TO THE LAST VM WORD.
-word_header forth_print_int, ".", 0, first_system_word, roll
+word_header forth_print_int, ".", 0, first_system_word, pc
     PopDataStack a0
     call print_int
     end_word
