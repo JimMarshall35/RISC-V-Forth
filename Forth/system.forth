@@ -453,19 +453,6 @@ asm_name ew
     dropStr_ ' dup , , 
 ; immediate 
 
-: create ( consumes next token )
-    4 alignHere
-    ( setCompile )
-    compileHeader
-    enter_word_macro
-    LiteralStr_ ' ,
-    here 12 + ,
-    ReturnStr_ ' ,
-    0 ,
-    setDictionaryEnd
-;
-
-
 : printc ( cstring -- )
     begin 
         dup c@ emit
@@ -487,26 +474,49 @@ asm_name ew
 ;
 
 : do_does> ( does_code -- )
-    getDictionaryEnd              ( does_code pHeaderEnd )
-    headerToThreadStart           ( does_code pThreadStart )
+    getDictionaryEnd
+    headerToThreadStart
+    ( iterate over the execution tokens in the last created word, to find )
+    ( the return token.                                                   )
     begin 
-        dup                       ( does_code pThreadStart pThreadStart )
-        @ ReturnStr_ ' = if         ( does_code pThreadStart )
+        dup
+        @ ReturnStr_ ' = if
+            ( pointer to the return token is on the top of the stack, replace it with a jump )
             dup JumpStr_ ' swap ! 
+            ( compile address of the code after does>, the location to jump to               )
             4 + !
+            ( early return                                                                   )
             r
         then
-        4 +                       ( does_code pThreadStart+4 )
+        4 +
         0
     until
 ;
 
 asm_name do_does
 
+: create ( consumes next token )
+    4 alignHere
+    ( setCompile )
+    compileHeader
+    enter_word_macro
+    LiteralStr_ ' ,
+    here 12 + ,
+    ReturnStr_ ' ,
+    0 ,
+    setDictionaryEnd
+;
+
 : does>
+    ( compile code to push the location we want the last created word to jump to    )
+    ( instead of returning                                                          )
     LiteralStr_ ' ,
     here 8 + ,
+    ( compile code to overwrite the return execution token of the last created word )
+    ( with a jump into THIS word, starting after does>                              )
     do_doesStr_ ' ,
+    ( compile a return so that the does> code doesn't execute when the defining word )
+    ( is used to create a definition.                                                )
     ReturnStr_ ' ,
 ; immediate
 
