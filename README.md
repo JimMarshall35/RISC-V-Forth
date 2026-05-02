@@ -1,6 +1,6 @@
 # A Forth for the CH32V203G6 microcontroller
 
-This is a forth written in assembly and forth for CH32 microcontroller. You can connect to it over uart using a usb serial adaptor and access a forth repl.
+This is a forth written in assembly and forth for CH32 microcontroller. You can connect to it over uart using a usb serial adaptor and access a forth repl to write and execute forth code on the microcontroller.
 It relies on a python script that compiles forth source code into threaded code, which bootstraps the forth interpreter and compiler.
 
 # Files
@@ -25,7 +25,7 @@ It relies on a python script that compiles forth source code into threaded code,
     - AssemblySrcParser.py - a library needed by Compiler.py, parses assembly word header macros in vm.S to link new words into the dictionary
     - ResolveTraceAddress.py - a simple debugging tool that will parse the .map file generated and match printed addresses to the name of words
   - forth_shell/
-    - a rust program to connect to the microcontroller over serial, basically the same as using minicom but will be extended with new features such as debugging, will always remain optional to use the forth
+    - a rust program to connect to the microcontroller over serial, basically the same as using minicom but will be extended with new features such as debugging, will always remain an optional enhancement, with the forth being usable with just a serial communication terminal like minicom
 
 
 # Boards tested on:
