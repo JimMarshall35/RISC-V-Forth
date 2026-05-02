@@ -2,14 +2,14 @@
 
 - Forth/
   - The core assembly and forth code, should largely portable between different risc-v chips
-  - Implementations of primitive words in vm.S
-  - String helper functions in utils.S
-  - UART driver in uart.S (arguably belongs in ch32)
-  - Important macros for threaded code execution in VmMacros.S
-  - UART base address define in defines.S (again, arguably ch32 specific)
-  - Forth code for the forth interpreter and compiller in system.forth
-    - compiled to threaded code in system.S using the compiler tool
-  - Forth code for a 32bit riscv assembler in assembler.forth ( unused and incomplete )
+    - Implementations of primitive words in vm.S
+    - String helper functions in utils.S
+    - UART driver in uart.S (arguably belongs in ch32)
+    - Important macros for threaded code execution in VmMacros.S
+    - UART base address define in defines.S (again, arguably ch32 specific)
+    - Forth code for the forth interpreter and compiller in system.forth
+      - compiled to threaded code in system.S using the compiler tool
+    - Forth code for a 32bit riscv assembler in assembler.forth ( unused and incomplete )
 - ch32/
   - non portable code specific to the ch32v203G6, code to initialize the microcontroller clock and uart
     - C code taken from https://github.com/openwch/ch32v20x/tree/main
