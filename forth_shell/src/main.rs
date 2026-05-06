@@ -8,10 +8,8 @@ use color_eyre::Result;
 
 use ratatui::{DefaultTerminal, Frame};
 use ratatui::widgets::{Block, Clear, Paragraph};
-use ratatui::layout::{Constraint, Layout};
-use ratatui::style::Stylize;
-use ratatui::text::Line;
-use crossterm::event::{self, KeyCode, KeyEventKind};
+use ratatui::layout::{Constraint};
+use crossterm::event::{self, KeyCode};
 
 use clap::Parser;
 use std::time::Duration;
@@ -193,13 +191,13 @@ impl App {
                 terminal.draw(|frame| self.render_establishing_connection_screen(frame));
             },
             DeviceConnectionState::RequestingDeviceReset => {
-                terminal.draw(|frame| self.requesting_reset.render(frame));
+                terminal.draw(|frame| self.requesting_reset.render(frame, &self.forth_state));
             },
             DeviceConnectionState::InitialHandshake => {
-                terminal.draw(|frame| self.initial_handshake.render(frame));
+                terminal.draw(|frame| self.initial_handshake.render(frame, &self.forth_state));
             },
             DeviceConnectionState::Connected => {
-                terminal.draw(|frame| self.connected.render(frame));
+                terminal.draw(|frame| self.connected.render(frame, &self.forth_state));
             }
         }
     }

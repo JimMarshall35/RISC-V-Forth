@@ -4,7 +4,7 @@ use crossterm::event::{self, KeyCode, KeyEventKind};
 use ratatui::layout::{Constraint, Layout, Position, Direction};
 use ratatui::style::{Color, Modifier, Style, Stylize};
 use ratatui::text::{Line, Span, Text};
-use ratatui::widgets::{Block, List, ListItem, Paragraph};
+use ratatui::widgets::{Block, List, ListItem, ListState, Paragraph};
 use ratatui::{Frame};
 
 use crate::device_connection_states::{DeviceConnectionState, DeviceConnectionStateImplementation};
@@ -27,6 +27,7 @@ pub struct ConnectedState {
     scroll_serialterm: u16,
     serialtermHeight: u16,
     next_state: DeviceConnectionState,
+    dictionary_list_state: ListState
 }
 
 impl ConnectedState {
@@ -39,7 +40,8 @@ impl ConnectedState {
             input_mode: InputMode::Normal,
             scroll_serialterm: 0,
             serialtermHeight: 0,
-            next_state: DeviceConnectionState::Connected
+            next_state: DeviceConnectionState::Connected,
+            dictionary_list_state: ListState::default()
         }
     }
 
@@ -191,7 +193,7 @@ impl DeviceConnectionStateImplementation for ConnectedState {
         }
     }
 
-    fn render(&mut self, frame: &mut Frame) {
+    fn render(&mut self, frame: &mut Frame, forth_state: &ForthState) {
         let outer_chunks = Layout::default()
             .direction(Direction::Vertical)
             .constraints([
@@ -248,9 +250,13 @@ impl DeviceConnectionStateImplementation for ConnectedState {
             )),
         }
 
-        let messages: Vec<ListItem> = vec![];
-        let messages = List::new(messages).block(Block::bordered().title("Messages"));
-        frame.render_widget(messages, inner_chunks[1]);
+        let mut wordVals: Vec<ListItem> = vec![];
+        for (key, value) in forth_state.words.iter() {
+            let v = format!("{} {}", key, value.address);
+            wordVals.push(ListItem::new(v));
+        }
+        let words = List::new(wordVals).block(Block::bordered().title("Dictionary"));
+        frame.render_stateful_widget(words, inner_chunks[1], &mut self.dictionary_list_state);
     }
 
     fn on_enter_state(&mut self, port: &mut dyn serialport::SerialPort, forth_state: &mut ForthState) {

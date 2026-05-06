@@ -18,7 +18,7 @@ pub trait DeviceConnectionStateImplementation {
 
     /// returned bool == was there a problem with serial reads
     fn read_serial(&mut self, port:&mut dyn SerialPort, forth_state: &mut ForthState);
-    fn render(&mut self, frame: &mut Frame);
+    fn render(&mut self, frame: &mut Frame, forth_state: &ForthState);
 
     fn on_enter_state(&mut self, port: &mut dyn SerialPort, forth_state: &mut ForthState);
 

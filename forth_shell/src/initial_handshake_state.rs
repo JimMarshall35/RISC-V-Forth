@@ -62,7 +62,6 @@ impl DeviceConnectionStateImplementation for InitialHandshakeState {
             let lines = self.input.lines().skip(1);
             for line in lines {
                 let tokens: Vec<&str> = line.trim().split_whitespace().collect();
-                
                 let addr: u32 = u32::from_str_radix(tokens[0].trim_start_matches("0x"), 16).unwrap();
                 forth_state.words.insert(tokens[1].to_string(), ForthWord { name: tokens[1].to_string(), address: addr});
             }
@@ -75,7 +74,7 @@ impl DeviceConnectionStateImplementation for InitialHandshakeState {
         }
     }
 
-    fn render(&mut self, frame: &mut ratatui::Frame) {
+    fn render(&mut self, frame: &mut ratatui::Frame, forth_state: &ForthState) {
         let area = frame.area();
         let popup_block = Block::bordered().title("Connection");
         let centered_area = area.centered(Constraint::Percentage(60), Constraint::Percentage(20));

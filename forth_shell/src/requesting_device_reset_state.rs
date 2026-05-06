@@ -76,7 +76,7 @@ impl DeviceConnectionStateImplementation for RequestingDeviceResetState {
         }
     }
 
-    fn render(&mut self, frame: &mut ratatui::Frame) {
+    fn render(&mut self, frame: &mut ratatui::Frame, forth_state: &ForthState) {
         let area = frame.area();
         let popup_block = Block::bordered().title("Connection");
         let centered_area = area.centered(Constraint::Percentage(60), Constraint::Percentage(20));
