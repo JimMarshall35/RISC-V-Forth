@@ -240,6 +240,7 @@ class Program:
         for w in self.compiledWords:
             lines += w.get_lines()
             lines.append("\n")
+        lines.append("forth_flash_dict_end:")
         return "\n".join(lines)
     def save_to_file(self, filePath):
         self.link_compiled_words()
@@ -448,6 +449,10 @@ def do_asm_name(prg, tokenItr, currentToken):
     name = next(tokenItr).string
     prg.set_current_word_assembler_label(name)
 
+def do_forth_dict_end(prg, tokenItr, currentToken):
+    prg.append_line_to_current(f"    .word {literal_word_name}")
+    prg.append_line_to_current(f"    .word forth_flash_dict_end")
+
 pseudo_tokens = {
     "if" : do_if,
     "then" : do_then,
@@ -463,7 +468,8 @@ pseudo_tokens = {
     "#define" : do_define,
     "string" : do_string,
     "immediate" : do_immediate,
-    "asm_name" : do_asm_name
+    "asm_name" : do_asm_name,
+    "FORTH_DICT_END" : do_forth_dict_end
 }
 def do_cmd_args():
     parser = argparse.ArgumentParser(

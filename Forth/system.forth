@@ -475,7 +475,7 @@ asm_name ew
 
 : memoryDump ( end begin -- )
     begin
-        dup @ . cr
+        dup dup . SPACE_CHAR emit @ . cr
         4 +
         2dup swap >=
     until
@@ -488,11 +488,17 @@ asm_name ew
     getDictionaryEnd   ( here pEnd )
     begin
         dup
-        dup . SPACE_CHAR emit printc cr              ( here pEnd ) 
+        dup . SPACE_CHAR emit printc SPACE_CHAR emit  ( here pEnd ) 
+        dup getHeaderImmediate .  SPACE_CHAR emit         ( here pEnd ) 
+        dup getHeaderIsPrmitive . cr                      ( here pEnd ) 
         ( print contents of word )
         2dup ptrInRam swap ptrInRam = if             ( here pEnd )
             ( both ptrs in same region )
             2dup memoryDump                              ( here pEnd ) 
+        else
+            swap drop
+            FORTH_DICT_END swap
+            2dup memoryDump
         then
         swap drop dup                                ( pEnd pEnd )
         getHeaderPrev                                ( pEnd pEnd->prev ) 
