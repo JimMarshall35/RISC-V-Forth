@@ -24,7 +24,8 @@ const banner: &str = "
 enum InputMode {
     Normal,
     Editing,
-    ScrollingWords
+    ScrollingWords,
+    ScrollingWordContent,
 }
 
 pub struct ConnectedState {
@@ -38,8 +39,10 @@ pub struct ConnectedState {
     scroll_serialterm: u16,
     serialtermHeight: u16,
     next_state: DeviceConnectionState,
-    dictionary_list_state: TableState,
-    num_words: usize
+    dictionary_table_state: TableState,
+    word_content_table_state: TableState,
+    num_words: usize,
+    current_selected_word_data_size: usize,
 }
 
 impl ConnectedState {
@@ -53,8 +56,10 @@ impl ConnectedState {
             scroll_serialterm: 0,
             serialtermHeight: 0,
             next_state: DeviceConnectionState::Connected,
-            dictionary_list_state: TableState::default(),
-            num_words: 0
+            dictionary_table_state: TableState::default(),
+            word_content_table_state: TableState::default(),
+            num_words: 0,
+            current_selected_word_data_size: 0
         }
     }
 
@@ -108,7 +113,7 @@ impl ConnectedState {
                     "e".bold(),
                     " to start editing, ".bold(),
                     "d".bold(),
-                    " to scroll dictionary.".bold(),
+                    " to scroll dictionary. ".bold()
                 ],
                 Style::default().add_modifier(Modifier::RAPID_BLINK),
             ),
@@ -116,9 +121,7 @@ impl ConnectedState {
                 vec![
                     "Press ".into(),
                     "Esc".bold(),
-                    " to stop editing, ".into(),
-                    "Enter".bold(),
-                    " to record the message".into(),
+                    " to stop editing, ".into()
                 ],
                 Style::default(),
             ),
@@ -126,7 +129,18 @@ impl ConnectedState {
                 vec![
                     "Press ".into(),
                     "Esc".bold(),
-                    " to stop scrolling, ".into()
+                    " to stop scrolling, ".into(),
+                    "Press w to scroll words memory".into()
+                ],
+                Style::default()
+            ),
+            InputMode::ScrollingWordContent => (
+                vec![
+                   "Press ".into(),
+                    "Esc".bold(),
+                    " to stop scrolling, Press ".into(),
+                    "d ".bold(),
+                    "to scroll words".into()
                 ],
                 Style::default()
             )
@@ -145,8 +159,8 @@ impl DeviceConnectionStateImplementation for ConnectedState {
                             self.input_mode = InputMode::Editing;
                         }
                         KeyCode::Char('d') => {
-                            if self.dictionary_list_state.selected() == None {
-                                self.dictionary_list_state.select(Some(0));
+                            if self.dictionary_table_state.selected() == None {
+                                self.dictionary_table_state.select(Some(0));
                             }
                             self.input_mode = InputMode::ScrollingWords;
                         }
@@ -193,24 +207,54 @@ impl DeviceConnectionStateImplementation for ConnectedState {
                         KeyCode::Char('q') => {
                             return true;
                         },
+                        KeyCode::Char('w') => { 
+                            if self.word_content_table_state.selected() == None {
+                                self.word_content_table_state.select(Some(0));
+                            }
+                            self.input_mode = InputMode::ScrollingWordContent; 
+                        },
                         KeyCode::Up => {
-                            match self.dictionary_list_state.selected() {
+                            match self.dictionary_table_state.selected() {
                                 Some(x) if x == 0 => {}
-                                Some(x) => { self.dictionary_list_state.select(Some(x - 1)); }
+                                Some(x) => { self.dictionary_table_state.select(Some(x - 1)); }
                                 _ => {}
                             }      
                             return false;
-                        }
+                        },
                         KeyCode::Down => {
-                            match self.dictionary_list_state.selected() {
+                            match self.dictionary_table_state.selected() {
                                 Some(i) if i >= self.num_words - 1 => {},
-                                Some(x) => { self.dictionary_list_state.select(Some(x + 1)); }
+                                Some(x) => { self.dictionary_table_state.select(Some(x + 1)); }
                                 _ => {}
                             }      
                             return false;
-                        }
+                        },
                         _ => {}
                     },
+                    InputMode::ScrollingWordContent => match key.code {
+                        KeyCode::Esc => self.input_mode = InputMode::Normal,
+                        KeyCode::Char('q') => {
+                            return true;
+                        },
+                        KeyCode::Char('d') => self.input_mode = InputMode::ScrollingWords,
+                        KeyCode::Up => {
+                            match self.word_content_table_state.selected() {
+                                Some(x) if x == 0 => {}
+                                Some(x) => { self.word_content_table_state.select(Some(x - 1)); }
+                                _ => {}
+                            }      
+                            return false;
+                        },
+                        KeyCode::Down => {
+                            match self.word_content_table_state.selected() {
+                                Some(i) if i >= self.current_selected_word_data_size - 1 => {},
+                                Some(x) => { self.word_content_table_state.select(Some(x + 1)); }
+                                _ => {}
+                            }      
+                            return false;
+                        },
+                        _ => {}
+                    }
                     _ => {}
                 }
             }
@@ -263,6 +307,14 @@ impl DeviceConnectionStateImplementation for ConnectedState {
                 Constraint::Percentage(30),
             ])
             .split(outer_chunks[2]);
+        
+        let memory_data_bar = Layout::default()
+                .direction(Direction::Vertical)
+                .constraints([
+                    Constraint::Percentage(50),
+                    Constraint::Percentage(50),
+                ])
+                .split(inner_chunks[1]);
 
         let (msg, style) = self.get_top_msg();
         let mut inputCpy = self.input.clone();
@@ -291,7 +343,8 @@ impl DeviceConnectionStateImplementation for ConnectedState {
             .style(match self.input_mode {
                 InputMode::Normal => Style::default(),
                 InputMode::Editing => Style::default().fg(Color::Yellow),
-                InputMode::ScrollingWords => Style::default()
+                InputMode::ScrollingWords => Style::default(),
+                InputMode::ScrollingWordContent=> Style::default()
             })
             .block(Block::bordered().title("Input"))
             .scroll((self.scroll_serialterm, 0));
@@ -307,30 +360,67 @@ impl DeviceConnectionStateImplementation for ConnectedState {
                 // Move one line down, from the border to the input line
                 inner_chunks[0].y + self.character_y as u16 + 1,
             )),
-            InputMode::ScrollingWords => {}
+            InputMode::ScrollingWords => {},
+            InputMode::ScrollingWordContent => {}
         }
 
         let mut rows: Vec<Row> = vec![];
+        let mut row_keys: Vec<&str> = vec![];
+
 
         for (key, value) in forth_state.words.iter() {
             rows.push(Row::new(vec![key as &str, &value.address_string as &str]));
+            row_keys.push(key as &str);
         }
         self.num_words = rows.len();
         let widths = [
             Constraint::Percentage(50),
             Constraint::Percentage(50),
         ];
-        let table = Table::new(rows, widths)
+        let words_table = Table::new(rows, widths)
             .block(Block::bordered().title("Words"))
             .style(match self.input_mode {
                 InputMode::Normal => Style::default(),
                 InputMode::Editing => Style::default(),
-                InputMode::ScrollingWords => Style::default().fg(Color::Yellow)
+                InputMode::ScrollingWords => Style::default().fg(Color::Yellow),
+                InputMode::ScrollingWordContent => Style::default(),
             })
             .row_highlight_style(Style::new().reversed())
             .highlight_symbol(">>");
 
-        frame.render_stateful_widget(table, inner_chunks[1], &mut self.dictionary_list_state);
+        frame.render_stateful_widget(words_table, memory_data_bar[0], &mut self.dictionary_table_state);
+
+
+        let mut word_rows: Vec<Row>  = vec![];
+        match self.dictionary_table_state.selected() {
+            Some(x) => {
+                let r = &forth_state.words[row_keys[x]].data;
+                for d in r {
+                    
+                    word_rows.push(Row::new(vec![ d.address_str.as_str(), d.data_str.as_str(), d.annotation.as_str()]));
+                }
+            },
+            None => {}
+        };
+        self.current_selected_word_data_size = word_rows.len();
+
+        let selected_word_widths = [
+            Constraint::Percentage(33),
+            Constraint::Percentage(33),
+            Constraint::Percentage(34),
+        ];
+        let word_content_table = Table::new(word_rows, selected_word_widths)
+            .block(Block::bordered().title("Words"))
+            .style(match self.input_mode {
+                InputMode::Normal => Style::default(),
+                InputMode::Editing => Style::default(),
+                InputMode::ScrollingWords => Style::default(),
+                InputMode::ScrollingWordContent => Style::default().fg(Color::Yellow),
+            })
+            .row_highlight_style(Style::new().reversed())
+            .highlight_symbol(">>");
+
+        frame.render_stateful_widget(word_content_table, memory_data_bar[1], &mut self.word_content_table_state);
 
     }
 

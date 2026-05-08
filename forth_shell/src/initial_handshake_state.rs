@@ -1,6 +1,7 @@
 use crate::device_connection_states::DeviceConnectionStateImplementation;
 use crate::forth_state::{ForthState, ForthWord};
 use crossterm::event::{self, KeyCode, KeyEventKind};
+use ratatui::style::{Stylize, Modifier};
 use std::fmt::format;
 use std::time::Duration;
 use ratatui::widgets::{Block, Clear, Paragraph};
@@ -80,7 +81,7 @@ impl DeviceConnectionStateImplementation for InitialHandshakeState {
         let centered_area = area.centered(Constraint::Percentage(60), Constraint::Percentage(20));
         // clears out any background in the area before rendering the popup
         frame.render_widget(Clear, centered_area);
-        let paragraph = Paragraph::new("Requesting Data From MCU").block(popup_block);
+        let paragraph = Paragraph::new("Requesting Data From MCU").block(popup_block).add_modifier(Modifier::RAPID_BLINK);
         frame.render_widget(paragraph, centered_area);
     }
 
