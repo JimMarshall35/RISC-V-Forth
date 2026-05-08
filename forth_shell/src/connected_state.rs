@@ -10,6 +10,7 @@ use ratatui::{Frame};
 use crate::device_connection_states::{DeviceConnectionState, DeviceConnectionStateImplementation};
 use crate::Args;
 use crate::forth_state::ForthState;
+use crate::showWords_parser::parse_showWords;
 
 const banner: &str = "
     ██████                      █████    █████                        █████               ████  ████ 
@@ -26,6 +27,7 @@ enum InputMode {
     Editing,
     ScrollingWords,
     ScrollingWordContent,
+    AutomatedComms,
 }
 
 pub struct ConnectedState {
@@ -43,6 +45,7 @@ pub struct ConnectedState {
     word_content_table_state: TableState,
     num_words: usize,
     current_selected_word_data_size: usize,
+    automated_comms_string: String,
 }
 
 impl ConnectedState {
@@ -59,7 +62,8 @@ impl ConnectedState {
             dictionary_table_state: TableState::default(),
             word_content_table_state: TableState::default(),
             num_words: 0,
-            current_selected_word_data_size: 0
+            current_selected_word_data_size: 0,
+            automated_comms_string: String::new(),
         }
     }
 
@@ -141,6 +145,12 @@ impl ConnectedState {
                     " to stop scrolling, Press ".into(),
                     "d ".bold(),
                     "to scroll words".into()
+                ],
+                Style::default()
+            ),
+            InputMode::AutomatedComms => (
+                vec![
+                   "loading new word data".into()
                 ],
                 Style::default()
             )
@@ -263,30 +273,66 @@ impl DeviceConnectionStateImplementation for ConnectedState {
     }
     
     fn read_serial(&mut self, mut port: &mut dyn serialport::SerialPort, forth_state: &mut ForthState) {
-        let mut buf: [u8; 128] = [0; 128];
-        match port.read(buf.as_mut_slice()) {
-            Ok(value) => {
-                for i in 0..value {
-                    if buf[i] == 8 {
-                        self.delete_char();
-                        
+        match self.input_mode {
+            InputMode::AutomatedComms => {
+                let mut buf: [u8; 64000] = [0; 64000];
+                match port.read(buf.as_mut_slice()) {
+                    Ok(value) => {
+                        for i in 0..value {
+                            self.automated_comms_string.push(buf[i] as char);
+                        }
                     }
-                    else if buf[i] == 13 {
-                        self.move_cursor_down();
-                        self.carriage_return();
+                    Err(ref e) if e.kind() == std::io::ErrorKind::TimedOut => {
+                        // no data available right now
+                        let lines = self.automated_comms_string.lines().skip(1);
+                        parse_showWords(lines, forth_state);
+                        self.input_mode = InputMode::Editing;
                     }
-                    else {
-                        self.enter_char(buf[i] as char);
+                    Err(e) => {
+                        self.next_state = DeviceConnectionState::EstablishingSerialPortConnection;
+                    }
+                }
+            },
+            _ => {
+                let mut buf: [u8; 128] = [0; 128];
+                match port.read(buf.as_mut_slice()) {
+                    Ok(value) => {
+                        for i in 0..value {
+                            if buf[i] == 8 {
+                                self.delete_char();
+                                
+                            }
+                            else if buf[i] == 13 {
+                                self.move_cursor_down();
+                                self.carriage_return();
+                                let last_line = self.input.lines().last();
+                                match last_line {
+                                    Some(x) => {
+                                        if x.contains(";") {
+                                            self.automated_comms_string = String::new();
+                                            self.input_mode = InputMode::AutomatedComms;
+                                            let cmd = "showLastWord\r";
+                                            port.write(cmd.as_bytes());
+                                        }
+                                    }
+                                    _ =>{}
+                                };
+                            }
+                            else {
+                                self.enter_char(buf[i] as char);
+                            }
+                        }
+                    }
+                    Err(ref e) if e.kind() == std::io::ErrorKind::TimedOut => {
+                        // no data available right now
+                    }
+                    Err(e) => {
+                        self.next_state = DeviceConnectionState::EstablishingSerialPortConnection;
                     }
                 }
             }
-            Err(ref e) if e.kind() == std::io::ErrorKind::TimedOut => {
-                // no data available right now
-            }
-            Err(e) => {
-                self.next_state = DeviceConnectionState::EstablishingSerialPortConnection;
-            }
         }
+        
     }
 
     fn render(&mut self, frame: &mut Frame, forth_state: &ForthState) {
@@ -344,7 +390,8 @@ impl DeviceConnectionStateImplementation for ConnectedState {
                 InputMode::Normal => Style::default(),
                 InputMode::Editing => Style::default().fg(Color::Yellow),
                 InputMode::ScrollingWords => Style::default(),
-                InputMode::ScrollingWordContent=> Style::default()
+                InputMode::ScrollingWordContent=> Style::default(),
+                InputMode::AutomatedComms => Style::default().fg(Color::Yellow),
             })
             .block(Block::bordered().title("Input"))
             .scroll((self.scroll_serialterm, 0));
@@ -361,7 +408,8 @@ impl DeviceConnectionStateImplementation for ConnectedState {
                 inner_chunks[0].y + self.character_y as u16 + 1,
             )),
             InputMode::ScrollingWords => {},
-            InputMode::ScrollingWordContent => {}
+            InputMode::ScrollingWordContent => {},
+            InputMode::AutomatedComms => {},
         }
 
         let mut rows: Vec<Row> = vec![];
@@ -384,6 +432,7 @@ impl DeviceConnectionStateImplementation for ConnectedState {
                 InputMode::Editing => Style::default(),
                 InputMode::ScrollingWords => Style::default().fg(Color::Yellow),
                 InputMode::ScrollingWordContent => Style::default(),
+                InputMode::AutomatedComms => Style::default(),
             })
             .row_highlight_style(Style::new().reversed())
             .highlight_symbol(">>");
@@ -416,6 +465,7 @@ impl DeviceConnectionStateImplementation for ConnectedState {
                 InputMode::Editing => Style::default(),
                 InputMode::ScrollingWords => Style::default(),
                 InputMode::ScrollingWordContent => Style::default().fg(Color::Yellow),
+                InputMode::AutomatedComms => Style::default(),
             })
             .row_highlight_style(Style::new().reversed())
             .highlight_symbol(">>");

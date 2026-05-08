@@ -65,6 +65,7 @@ impl DeviceConnectionStateImplementation for InitialHandshakeState {
         if done {
             // showword should have finished
             let lines = self.input.lines().skip(1);
+            forth_state.words.clear();
             parse_showWords(lines, forth_state);
             if forth_state.words.len() > 0 {
                 self.next_state = DeviceConnectionState::Connected;
