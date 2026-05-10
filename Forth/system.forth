@@ -487,6 +487,11 @@ asm_name ew
 ;
 
 
+: cells ( index -- indexInCells ) CELL_SIZE * ;
+
+#define AFTER_FIRST_WORD_DATA_SECTION_OFFSET 2
+: FORTH_DICT_END FORTH_DATA_SECTION AFTER_FIRST_WORD_DATA_SECTION_OFFSET cells + @ ;
+
 : showWords
     here 
     getDictionaryEnd   ( here pEnd )
@@ -589,8 +594,6 @@ buf pageBuffer 256
 
 : pageAddress ( flashPtr -- page ) PAGE_MASK & ;
 
-: cells ( index -- indexInCells ) CELL_SIZE * ;
-
 : copyPageToBuffer ( pagePtr -- )
     64 0 do
         dup i cells + @ pageBuffer i cells + !
@@ -674,4 +677,22 @@ buf pageBuffer 256
         ( ptrPage )
         waitForFlashNotBusy
     loop
+;
+
+( flash the first word to exist in RAM into flash )
+
+: findFirstRAMWord ( -- firstWordInRam )
+    getDictionaryEnd
+    begin
+        dup getHeaderPrev ptrInRam != if
+            r
+        then
+        getHeaderPrev
+        0
+    until
+;
+
+: flash 
+    findFirstRAMWord dup getHeaderPrev ( firstRamWord lastFlashWord )
+    
 ;

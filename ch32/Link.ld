@@ -126,6 +126,9 @@ SECTIONS
 	  KEEP (*(.dtors))
 	} >FLASH AT>FLASH 
 
+	/* End of used flash */
+	_flash_free_start = ALIGN(4);
+
 	.dalign :
 	{
 		. = ALIGN(4);

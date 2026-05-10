@@ -212,6 +212,7 @@ class Program:
         g = [f".global {w.get_label()}_impl" for w in self.compiledWords]
         g.append(".global first_system_word")
         g.append(".global last_word")
+        g.append(".global forth_flash_dict_end")
         return g
     def get_preamble_lines(self):
         return [
@@ -445,14 +446,14 @@ def do_immediate(prg, tokenItr, currentToken):
 def do_asm_name(prg, tokenItr, currentToken):
     name = next(tokenItr).string
     prg.set_current_word_assembler_label(name)
-
-def do_forth_dict_end(prg, tokenItr, currentToken):
+    
+def do_forth_data_section(prg, tokenItr, currentToken):
     prg.append_line_to_current(f"    .word {literal_word_name}")
-    prg.append_line_to_current(f"    .word forth_flash_dict_end")
+    prg.append_line_to_current(f"    .word begin_forth_data_section")
 
-def do_forth_dict_end_flash_address(prg, tokenItr, currentToken):
+def do_forth_data_section_initial_vals(prg, tokenItr, currentToken):
     prg.append_line_to_current(f"    .word {literal_word_name}")
-    prg.append_line_to_current(f"    .word vm_p_dictionary_end_val")
+    prg.append_line_to_current(f"    .word begin_forth_data_section_data")
 
 pseudo_tokens = {
     "if" : do_if,
@@ -470,8 +471,10 @@ pseudo_tokens = {
     "string" : do_string,
     "immediate" : do_immediate,
     "asm_name" : do_asm_name,
-    "FORTH_DICT_END" : do_forth_dict_end,
-    "FORTH_DICT_END_FLASH_ADDR" : do_forth_dict_end_flash_address
+    # what's confusing is that FORTH_DICT_END and FORTH_DICT_END_FLASH_ADDR relate to two different conceptual "dictionary ends".
+    # FORTH_DICT_END is AFTER the 
+    "FORTH_DATA_SECTION" : do_forth_data_section,
+    "FORTH_DATA_SECTION_INITIAL_VALS" : do_forth_data_section_initial_vals,
 }
 def do_cmd_args():
     parser = argparse.ArgumentParser(

@@ -78,6 +78,13 @@
 .global vm_p_dictionary_end
 .global vm_p_dictionary_end_val
 
+.global vm_free_flash_start
+.global vm_free_flash_start_val
+
+.global begin_forth_data_section
+.global begin_forth_data_section_data
+# mr worldwide
+
 #define VM_STACK_BOUNDS_CHECK
 
 .global vm_flags
@@ -108,13 +115,36 @@ vm_scratch_pad: .zero 64
 
 # dictionary
 vm_str_error_message: .word 0
+.balign 4
+
+
+# FORTH DATA SECTION BEGIN
+# forth manages its own data section separate from the one setup by startup code (for now)
+begin_forth_data_section:
+
+# points to the header of the last word in the dictionary
 vm_p_dictionary_end: .word 0
 
+# points to a 4 byte aligned address that's the first free flash memory for new words
+vm_free_flash_start: .word 0
+
+# points to AFTER the last word (not necessarily the first free flash memory
+vm_after_first_word: .word 0
+
+end_forth_data_section:
+# FORTH DATA SECTION END
 
 .section .text
+.balign 4
 
+# FORTH FLASH DATA SECTION BEGIN
+begin_forth_data_section_data:
 vm_p_dictionary_end_val: .word last_word
+vm_free_flash_start_val: .word _flash_free_start
+vm_after_first_word_val: .word forth_flash_dict_end
 
+end_forth_data_section_data:
+# FORTH_FLASH DATA SECTION END
 
 starting_interpreter_string: .ascii "starting outer interpreter...\n\r\0"
 
@@ -149,11 +179,18 @@ vm_run:
     SaveReturnAddress
 
     # init dictionary
-    # This forth does not use the data section, it uses one variable in a data section-like way
-    la t0, vm_p_dictionary_end
-    la t1, vm_p_dictionary_end_val
-    lw t1, 0(t1)
-    sw t1, 0(t0)
+    # This forth does not use the data section, it uses one or two variables in a data section-like way
+    # setup data section
+    la t0, begin_forth_data_section
+    la t1, begin_forth_data_section_data
+    la t3, end_forth_data_section
+1:
+    lw t2, 0(t1)
+    sw t2, 0(t0)
+    addi t0, t0, 4
+    addi t1, t1, 4
+    
+    bne t0, t3, 1b
 
 
     la a0, starting_interpreter_string
