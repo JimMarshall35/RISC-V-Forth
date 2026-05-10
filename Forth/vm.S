@@ -75,6 +75,9 @@
 
 .global last_vm_word
 
+.global vm_p_dictionary_end
+.global vm_p_dictionary_end_val
+
 #define VM_STACK_BOUNDS_CHECK
 
 .global vm_flags
@@ -104,11 +107,14 @@ vm_return_stack: .zero RETURN_STACK_MAX_SIZE * CELL_SIZE  # 64 cell return stack
 vm_scratch_pad: .zero 64
 
 # dictionary
-vm_p_dictionary_start: .word 0
-vm_p_dictionary_end: .word 0
 vm_str_error_message: .word 0
+vm_p_dictionary_end: .word 0
+
 
 .section .text
+
+vm_p_dictionary_end_val: .word last_word
+
 
 starting_interpreter_string: .ascii "starting outer interpreter...\n\r\0"
 
@@ -128,40 +134,6 @@ vm_error_handler:
     j 1b
     ret
 
-find_dict_end:
-    # Args:
-    # a0 - ptr to first dict header
-    # Returns:
-    # a1 - ptr to last dict header
-    SaveReturnAddress
-1:
-    word_next a0, t0
-    # PushReg a0
-    # PushReg t0
-    
-    # word_code a0, t0
-    # mv a0, t0
-    # li a1, UART_BASE
-    # call puts
-    # # li a0, UART_BASE
-    # # call getc_block
-    # # li a1, UART_BASE
-    # # call putc
-
-    # PopReg t0
-    # PopReg a0
-    
-    lw t0, 0(t0)
-    mv a1, a0
-    mv a0, t0
-    
-    
-    
-    bne t0, zero, 1b
-    
-    RestoreReturnAddress
-    ret
-
 data_stack_base: .ascii "data stack base: \0"
 return_stack_base: .ascii "return stack base: \0"
 instruction_ptr: .ascii "instruction ptr: \0"
@@ -177,21 +149,18 @@ vm_run:
     SaveReturnAddress
 
     # init dictionary
-    la t0, vm_p_dictionary_start
-    la t1, emit
+    # This forth does not use the data section, it uses one variable in a data section-like way
+    la t0, vm_p_dictionary_end
+    la t1, vm_p_dictionary_end_val
+    lw t1, 0(t1)
     sw t1, 0(t0)
+
 
     la a0, starting_interpreter_string
     li a1, UART_BASE
     call puts
 
-    la a0, emit
-    call find_dict_end
-
-    la t0, vm_p_dictionary_end
-    
-    sw a1, 0(t0)
-    
+    la a0, emit    
 
     # set interpreter variable registers
     la s1, vm_data_stack

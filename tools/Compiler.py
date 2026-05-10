@@ -155,13 +155,7 @@ class CompiledWord:
         self.nextWord = ""
         self.prevWord = ""
         self.code = code
-
-        # Some characters are just too "real" for the assembler to include in labels such as ':', ',', '=' and many more.
-        # Some words street names contain such characters and so they need a government name
-        # that conforms to the rules society places on them: self.assemblerLabelName.
-        # But when the outer intepreter is fired up and the threads are threadin' we don't care about such "labels"
-        self.assemblerLabelName = "" 
-        
+        self.assemblerLabelName = ""         
         self.immediate = False
         self.body = []
         self.labelCounter = 0
@@ -217,6 +211,7 @@ class Program:
     def get_globals_for_word(self):
         g = [f".global {w.get_label()}_impl" for w in self.compiledWords]
         g.append(".global first_system_word")
+        g.append(".global last_word")
         return g
     def get_preamble_lines(self):
         return [
@@ -237,7 +232,9 @@ class Program:
         lines += self.get_header_comment_lines()
         lines += self.get_globals_for_word()      # global declarations so the words are useable by other translation units
         lines += self.get_preamble_lines()        # any includes for macros
-        for w in self.compiledWords:
+        for i, w in enumerate(self.compiledWords):
+            if i == len(self.compiledWords) - 1:
+                lines.append("last_word:\n")
             lines += w.get_lines()
             lines.append("\n")
         lines.append("forth_flash_dict_end:")
@@ -453,6 +450,10 @@ def do_forth_dict_end(prg, tokenItr, currentToken):
     prg.append_line_to_current(f"    .word {literal_word_name}")
     prg.append_line_to_current(f"    .word forth_flash_dict_end")
 
+def do_forth_dict_end_flash_address(prg, tokenItr, currentToken):
+    prg.append_line_to_current(f"    .word {literal_word_name}")
+    prg.append_line_to_current(f"    .word vm_p_dictionary_end_val")
+
 pseudo_tokens = {
     "if" : do_if,
     "then" : do_then,
@@ -469,7 +470,8 @@ pseudo_tokens = {
     "string" : do_string,
     "immediate" : do_immediate,
     "asm_name" : do_asm_name,
-    "FORTH_DICT_END" : do_forth_dict_end
+    "FORTH_DICT_END" : do_forth_dict_end,
+    "FORTH_DICT_END_FLASH_ADDR" : do_forth_dict_end_flash_address
 }
 def do_cmd_args():
     parser = argparse.ArgumentParser(

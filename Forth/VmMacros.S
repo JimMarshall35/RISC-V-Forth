@@ -27,8 +27,8 @@
 .equ PRIMITIVE_WORD_BITMASK, 2
 
 .macro StackSizeElements regSize, regTemp, regOut
-li \regTemp, CELL_SIZE
-div \regOut, \regSize, \regTemp 
+    li \regTemp, CELL_SIZE
+    div \regOut, \regSize, \regTemp 
 .endm
 
 
@@ -105,7 +105,6 @@ div \regOut, \regSize, \regTemp
     .zero HEADER_CODE_BUF_SIZE - (2b - 1b)
     .endif
     .word 0
-    .word 0
     .word \flags
 \name\()_impl:
 .endm
@@ -114,7 +113,6 @@ div \regOut, \regSize, \regTemp
     .balign 4
 \name:
     padded_string \code, HEADER_CODE_BUF_SIZE
-    .word 0
     .word \prev
     .word \flags
 \name\()_impl:
@@ -125,10 +123,8 @@ div \regOut, \regSize, \regTemp
     .balign 4
 \name:
     padded_string \code, HEADER_CODE_BUF_SIZE
-    .word \next
     .word 0
     .word \flags
-    .balign 4
 \name\()_impl:
 .endm
 
@@ -146,10 +142,8 @@ div \regOut, \regSize, \regTemp
     .ifgt HEADER_CODE_BUF_SIZE - (2b - 1b)
     .zero HEADER_CODE_BUF_SIZE - (2b - 1b)
     .endif
-    .word \next
     .word \prev
     .word \flags
-    .balign 4
 \name\()_impl:
 .endm
 
@@ -170,8 +164,7 @@ div \regOut, \regSize, \regTemp
 .endm
 
 .equ OFFSET_CODE, 0
-.equ OFFSET_NEXT, (HEADER_CODE_BUF_SIZE)
-.equ OFFSET_PREV, (OFFSET_NEXT + CELL_SIZE)
+.equ OFFSET_PREV, (HEADER_CODE_BUF_SIZE)
 .equ OFFSET_IMM, (OFFSET_PREV + CELL_SIZE)
 .equ HEADER_SIZE, OFFSET_IMM + CELL_SIZE
 

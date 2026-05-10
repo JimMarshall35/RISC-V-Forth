@@ -13,7 +13,7 @@ pub enum DeviceConnectionState {
 }
 
 pub trait DeviceConnectionStateImplementation {
-    // first returned bool == was there any problem with serial writes, second bool, do we want to quit application
+    // returned bool = do we want to quit application
     fn handle_input(&mut self, port: &mut dyn SerialPort) -> bool;
 
     /// returned bool == was there a problem with serial reads

@@ -210,6 +210,12 @@ impl DeviceConnectionStateImplementation for ConnectedState {
                         KeyCode::Down => self.scroll_down(),
                         KeyCode::Up => self.scroll_up(),
                         KeyCode::Esc => self.input_mode = InputMode::Normal,
+                        KeyCode::F(5) => {
+                            self.automated_comms_string = String::new();
+                            self.input_mode = InputMode::AutomatedComms;
+                            let cmd = "showLastWord\r";
+                            port.write(cmd.as_bytes());
+                        },
                         _ => {}
                     },
                     InputMode::ScrollingWords => match key.code {
@@ -416,9 +422,10 @@ impl DeviceConnectionStateImplementation for ConnectedState {
         let mut row_keys: Vec<&str> = vec![];
 
 
-        for (key, value) in forth_state.words.iter() {
-            rows.push(Row::new(vec![key as &str, &value.address_string as &str]));
-            row_keys.push(key as &str);
+        
+        for value in forth_state.words.iter() {
+            rows.push(Row::new(vec![&value.name as &str, &value.address_string as &str]));
+            row_keys.push(&value.name as &str);
         }
         self.num_words = rows.len();
         let widths = [
@@ -443,7 +450,7 @@ impl DeviceConnectionStateImplementation for ConnectedState {
         let mut word_rows: Vec<Row>  = vec![];
         match self.dictionary_table_state.selected() {
             Some(x) => {
-                let r = &forth_state.words[row_keys[x]].data;
+                let r = &forth_state.find_word_with_name(row_keys[x]).unwrap().data;//&forth_state.words[row_keys[x]].data;
                 for d in r {
                     
                     word_rows.push(Row::new(vec![ d.address_str.as_str(), d.data_str.as_str(), d.annotation.as_str()]));

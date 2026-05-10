@@ -10,10 +10,9 @@
 #define SPACE_CHAR 32
 #define MINUS_CHAR 45
 
-#define HEADER_SIZE 44
-#define OFFSET_IMM 40
-#define OFFSET_NEXT 32
-#define OFFSET_PREV 36
+#define HEADER_SIZE 40
+#define OFFSET_IMM 36
+#define OFFSET_PREV 32
 
 #define CELL_SIZE 4
 
@@ -169,13 +168,10 @@ asm_name lte
     1
 ;
 
-: getHeaderNext ( pHeader -- pHeader->pNext ) OFFSET_NEXT + @ ; 
 
 : getHeaderPrev ( pHeader -- pHeader->pPrev ) OFFSET_PREV + @ ; 
 
 : setHeaderPrev ( pPrev pHeader -- ) OFFSET_PREV + ! ; 
-
-: setHeaderNext ( pNext pHeader -- ) OFFSET_NEXT + ! ; 
 
 : setHeaderImmediate ( bImm pHeader -- ) OFFSET_IMM + ! ;
 
@@ -347,8 +343,6 @@ asm_name cbyte
     ( pHeader )
     dup tokenBufferToHeaderCode
     dup getDictionaryEnd swap setHeaderPrev
-    dup getDictionaryEnd setHeaderNext
-    dup 0 swap setHeaderNext
     dup 0 swap setHeaderImmediate
 ;
 
@@ -565,3 +559,119 @@ asm_name do_does
 ; immediate
 
 asm_name does
+
+
+( CH32 Flash Memory )
+
+#define FLASH_KEY_1 0x45670123
+#define FLASH_KEY_2 0xCDEF89AB
+#define R32_FLASH_KEYR 0x40022004
+#define R32_FLASH_CTLR 0x40022010
+#define R32_FLASH_OBKEYR 0x40022008
+#define R32_FLASH_STATR 0x4002200C
+#define R32_FLASH_ADDR 0x40022014
+#define R32_FLASH_OBR 0x4002201C
+#define R32_FLASH_WPR 0x40022020
+#define R32_FLASH_MODEKEYR 0x40022024
+
+#define FLASH_CTLR_LOCK_BIT 0x80
+#define FLASH_CTLR_FLOCK_BIT 0x8000
+#define FLASH_CTLR_FTER_BIT 0x20000
+#define FLASH_CTLR_FTPG_BIT 0x10000
+#define FLASH_CTLR_STRT_BIT 0x40
+
+#define FLASH_STATR_EOP_BIT 0x20
+#define FLASH_STATR_BSY_BIT 1
+
+#define PAGE_MASK 0xFFFFFF00
+
+buf pageBuffer 256
+
+: pageAddress ( flashPtr -- page ) PAGE_MASK & ;
+
+: cells ( index -- indexInCells ) CELL_SIZE * ;
+
+: copyPageToBuffer ( pagePtr -- )
+    64 0 do
+        dup i cells + @ pageBuffer i cells + !
+    loop
+;
+
+: flashLocked ( -- 0IfFlashUnlocked ) R32_FLASH_CTLR @ FLASH_CTLR_LOCK_BIT & ;
+
+: fastFlashLocked ( -- 0IfFastFlashUnlocked ) R32_FLASH_CTLR @ FLASH_CTLR_FLOCK_BIT & ;
+
+: unlockFlash ( -- ) 
+    FLASH_KEY_1 R32_FLASH_KEYR !
+    FLASH_KEY_2 R32_FLASH_KEYR !
+;
+
+: fastFlashModeUnlock ( -- )
+    FLASH_KEY_1 R32_FLASH_MODEKEYR !
+    FLASH_KEY_2 R32_FLASH_MODEKEYR !
+;
+
+: lockFlash ( -- )
+    R32_FLASH_CTLR @ FLASH_CTLR_LOCK_BIT | R32_FLASH_CTLR !
+;
+
+: waitForFlashNotBusy ( -- )
+    begin
+        R32_FLASH_STATR @ FLASH_STATR_BSY_BIT & = 0
+    until
+;
+
+( erasePage and flashPageBuffer will unlock the flash, but it is the users responsibility to lock flash after use )
+
+: erasePage ( ptrPage -- )
+    ( make sure flash is unlocked )
+    flashLocked 0 != if
+        unlockFlash
+    then
+
+    ( make sure fast flash mode is unlocked )
+    fastFlashLocked 0 != if 
+        fastFlashModeUnlock
+    then
+
+    waitForFlashNotBusy
+
+    ( enable fast erase 256 byte page mod )
+    R32_FLASH_CTLR @ FLASH_CTLR_FTER_BIT | R32_FLASH_CTLR !
+    
+    ( write page address to R32_FLASH_ADDR )
+    R32_FLASH_ADDR !
+
+    ( trigger the erase operation )
+    R32_FLASH_CTLR @ FLASH_CTLR_STRT_BIT | R32_FLASH_CTLR !
+    
+    ( wait for erase to complete )
+    waitForFlashNotBusy
+
+    ( reset eop bit by writing 1 )
+    R32_FLASH_STATR @ FLASH_STATR_EOP_BIT | R32_FLASH_STATR !
+;
+
+: flashPageBuffer ( flashPagePtr -- )
+    ( make sure flash is unlocked )
+    flashLocked 0 != if
+        unlockFlash
+    then
+
+    ( make sure fast flash mode is unlocked )
+    fastFlashLocked 0 != if 
+        fastFlashModeUnlock
+    then
+
+    waitForFlashNotBusy
+
+    ( enable fast program 256 byte page mod )
+    R32_FLASH_CTLR @ FLASH_CTLR_FTPG_BIT | R32_FLASH_CTLR !
+
+    64 0 do 
+        ( ptrPage )
+        dup i cells + pageBuffer i cells + @ swap !
+        ( ptrPage )
+        waitForFlashNotBusy
+    loop
+;

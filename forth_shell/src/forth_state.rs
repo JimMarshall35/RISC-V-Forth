@@ -3,7 +3,7 @@ use std::collections::{HashMap};
 use clap::builder::Str;
 use serialport::new;
 
-const HEADER_SIZE: u32 = 44;
+const HEADER_SIZE: u32 = 40;
 
 #[derive(Clone)]
 pub struct MCUMemoryDataWord {
@@ -61,19 +61,19 @@ impl ForthWord {
 }
 
 pub struct ForthState {
-    pub words: HashMap<String, ForthWord>
+    pub words: Vec<ForthWord>
 }
 
 impl ForthState {
     pub fn new() -> Self {
         Self {
-            words: HashMap::new()
+            words: Vec::new()
         }
     }
     pub fn lookup_word_impl_address(&self, address: u32) -> Option<String> {
-        for (key, value) in self.words.iter() {
+        for value in self.words.iter() {
             if value.impl_address == address {
-                return Some(format!("{}_impl", key));
+                return Some(format!("{}_impl", value.name));
             }
         }
         None
@@ -81,17 +81,21 @@ impl ForthState {
     pub fn annotate_data(&mut self) {
         let address_map: HashMap<u32, String> = self.words
             .iter()
-            .map(|(key, value)| {
-                (value.impl_address, format!("{}_impl", key))
+            .map(|value| {
+                (value.impl_address, format!("{}_impl", value.name))
             })
             .collect();
 
-        for value in self.words.values_mut() {
-        for w in &mut value.data {
-            if let Some(annotation) = address_map.get(&w.data) {
-                w.annotation = annotation.clone();
+        for value in &mut self.words {
+            for w in &mut value.data {
+                if let Some(annotation) = address_map.get(&w.data) {
+                    w.annotation = annotation.clone();
+                }
             }
         }
     }
+
+    pub fn find_word_with_name(&self, name: &str) -> Option<&ForthWord> {
+        return self.words.iter().find(|x| { x.name == name });
     }
 }
