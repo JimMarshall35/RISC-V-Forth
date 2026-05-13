@@ -724,9 +724,9 @@ buf pageBuffer 256
     ( firstRamWord pFreeFlashPtr )
     dup pageAddress copyPageToBuffer           ( copy flash page to ram, we must preserve anything else that's on the same page before the new word )
                                                ( firstRamWord pFreeFlashPtr )
-    dup offsetFromPagepageBuffer +
+    dup offsetFromPage pageBuffer +
                                                ( firstRamWord pFreeFlashPtr pWrite )
-    roll                                       ( pFreeFlashPtr pWrite firstRamWord )
+    rot                                        ( pFreeFlashPtr pWrite firstRamWord )
     swap                                       ( pFreeFlashPtr firstRamWord pWrite )
     dup
     pageBuffer 256 +                           ( pFreeFlashPtr firstRamWord pWrite pWrite pageBufferEnd )
@@ -737,10 +737,26 @@ buf pageBuffer 256
 
     dup pageAddress erasePage
     dup pageAddress flashPageBuffer
-    256 +
+    pageAddress 256 +
     findFirstRAMWord
     dup find_word_end swap - CELL_SIZE /       ( pFreeFlashPtr totalWordSize )
-    <R -                                       ( pFreeFlashPtr remainingWords )
+    <R dup R> -                                       ( pFreeFlashPtr remainingWords )
+    
+    dup 0 > if
+        ( there's more to be copied )          ( pFreeFlashPtr remainingWords )
+        findFirstRAMWord <R cells +            ( pFreeFlashPtr remainingWords pSrc )
+        swap
+        begin
+            swap 
+            dup rot                            ( pFreeFlashPtr remainingWords pSrc pSrc remainingWords)
+            swap pageBuffer                        ( pFreeFlashPtr remainingWords pSrc pSrc remainingWords pDst )
+            rot rot cpyCells                       ( pFreeFlashPtr remainingWords pSrc )
+            swap dup 64 -
+            0 <= 
+        until
+    else
+        <R drop
+    then
 
 
     
