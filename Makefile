@@ -4,6 +4,7 @@ OBJCOPY = riscv-none-elf-objcopy
 
 # Targets
 FORTH = Forth
+QEMU_FORTH = QEMUForth
 
 # ===== Select startup file here =====
 # Options: D6, D8, D8W
@@ -12,6 +13,9 @@ STARTUP ?= D6
 STARTUP_FILE = SRC/Startup/startup_ch32v20x_$(STARTUP).S
 
 # Flags
+
+QEMU_LDFLAGS = -fno-use-linker-plugin -T qemu/baremetal.ld -march=rv32imafdc -mabi=ilp32 -nostdlib -static
+
 CFLAGS = -march=rv32imac_zicsr_zifencei -mabi=ilp32 -msmall-data-limit=8 -msave-restore \
          -Os -fmessage-length=0 -fsigned-char -ffunction-sections -fdata-sections \
          -fno-common -Wunused -Wuninitialized -g
@@ -31,19 +35,26 @@ FORTH_SRC = Forth/system.forth
 # full library
 
 # FORTH
+QEMU_SRC = $(wildcard qemu/*.S)
 CH32_SRC = $(wildcard ch32/*.c) $(wildcard ch32/*.S)
 FORTH_S := $(filter-out $(GEN_ASM), $(wildcard Forth/*.S Forth/*.s))
 
 FORTH_SRCS = $(CH32_SRC) $(FORTH_S) $(GEN_ASM)
+QEMU_SRCS = $(QEMU_SRC) $(FORTH_S) $(GEN_ASM)
 
 # Object files
 FORTH_OBJS = $(FORTH_SRCS:.c=.o)
 FORTH_OBJS := $(FORTH_OBJS:.S=.o)
 
+QEMU_OBJS = $(QEMU_SRCS:.S=.o)
+
 # Default target
-all: $(FORTH).elf #$(FORTH).elf
+all: $(FORTH).elf $(QEMU_FORTH).elf
 
 # Link
+$(QEMU_FORTH).elf: $(QEMU_OBJS)
+	$(CC) $(CFLAGS) $(QEMU_LDFLAGS) $(QEMU_OBJS) -o $@ 
+
 $(FORTH).elf: $(FORTH_OBJS)
 	$(CC) $(CFLAGS) $(LDFLAGS) $(FORTH_OBJS) -o $@ 
 
