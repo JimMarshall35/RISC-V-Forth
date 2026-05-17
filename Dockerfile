@@ -22,4 +22,6 @@ RUN echo "$(cat /tmp/src/toolchansha.sha)"
 RUN mkdir -p /opt/toolchain \
  && tar -xzf /tmp/src/toolchain.tar.gz -C /opt/toolchain --strip-components=1
 
+RUN rm -rf /tmp/src
+
 ENV PATH="/opt/toolchain/bin:${PATH}"
