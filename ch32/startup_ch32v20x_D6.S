@@ -10,6 +10,76 @@
 ;* Attention: This software (modified or not) and binary are used for 
 ;* microcontroller manufactured by Nanjing Qinheng Microelectronics.
 *******************************************************************************/
+#define R32_EXTEN_CTR 0x40023800
+#define EXTEN_PLL_HSI_PRE 0x00000010 /* Bit 4 */
+#define R32_RCC_CFGR0 0x40021004
+#define R32_RCC_CTLR 0x40021000
+#define R32_RCC_INTR 0x40021008
+#define RCC_HPRE_DIV1 0x00000000 /* SYSCLK not divided */
+#define RCC_PPRE2_DIV1 0x00000000 /* PPRE2 not divided */
+#define RCC_PPRE1_DIV2 0x00000400 /* PPRE1 divided by 2 */
+#define RCC_PLLSRC 0x00010000 /* PLL entry clock source */
+
+#define RCC_PLLXTPRE 0x00020000 /* HSE divider for PLL entry */
+
+#define RCC_PLLMULL 0x003C0000 /* PLLMUL[3:0] bits (PLL multiplication factor) */
+#define RCC_PLLMULL12 0x00280000 /* PLL input clock*12 */
+#define RCC_PLLSRC_HSI_Div2 0x00000000 /* HSI clock divided by 2 selected as PLL entry clock source */
+#define RCC_PLLON 0x01000000 /* PLL enable */
+#define RCC_PLLRDY 0x02000000 /* PLL clock ready flag */
+#define RCC_SWS 0x0000000C /* SWS[1:0] bits (System Clock Switch Status) */
+#define RCC_SW 0x00000003 /* SW[1:0] bits (System clock Switch) */
+#define RCC_SW_PLL 0x00000002 /* PLL selected as system clock */
+
+.macro or_exten_ctr val
+    li t0, R32_EXTEN_CTR
+    lw t0, (t0)
+    li t1, \val
+    or t0, t0, t1
+    li t1, R32_EXTEN_CTR
+    sw t0, (t1)
+.endm
+
+.macro or_rcc_ctrl val
+    li t0, R32_RCC_CTLR
+    lw t0, (t0)
+    li t1, \val
+    or t0, t0, t1
+    li t1, R32_RCC_CTLR
+    sw t0, (t1)
+.endm
+
+.macro and_rcc_ctrl val
+    li t0, R32_RCC_CTLR
+    lw t0, (t0)
+    li t1, \val
+    and t0, t0, t1
+    li t1, R32_RCC_CTLR
+    sw t0, (t1)
+.endm
+
+.macro or_rcc_cfg0 val
+    li t0, R32_RCC_CFGR0
+    lw t0, (t0)
+    li t1, \val
+    or t0, t0, t1
+    li t1, R32_RCC_CFGR0
+    sw t0, (t1)
+.endm
+
+.macro and_rcc_cfg0 val
+    li t0, R32_RCC_CFGR0
+    lw t0, (t0)
+    li t1, \val
+    and t0, t0, t1
+    li t1, R32_RCC_CFGR0
+    sw t0, (t1)
+.endm
+
+
+    // SystemInit in asm end
+    
+
 
 	.section	.init,"ax",@progbits
 	.global	_start
@@ -246,7 +316,59 @@ handle_reset:
     ori t0, t0, 3           
 	csrw mtvec, t0
 
-    jal  SystemInit
+    //jal  SystemInit
+    // SystemInit in asm begin
+
+    #RCC->CTLR |= (uint32_t)0x00000001;
+    or_rcc_ctrl 1
+
+    #RCC->CFGR0 &= (uint32_t)0xF0FF0000;
+    and_rcc_cfg0 0xF0FF0000
+
+    #RCC->CTLR &= (uint32_t)0xFEF6FFFF;
+    and_rcc_ctrl 0xFEF6FFFF
+
+    #RCC->CTLR &= (uint32_t)0xFFFBFFFF;
+    and_rcc_ctrl 0xFFFBFFFF
+
+    #RCC->CFGR0 &= (uint32_t)0xFF00FFFF;
+    and_rcc_cfg0 0xFF00FFFF
+    
+    #RCC->INTR = 0x009F0000;    
+    li t0, R32_RCC_INTR
+    li t1, 0x009F0000
+    sw t1, (t0)
+
+
+    #SetSysClock();
+    or_exten_ctr EXTEN_PLL_HSI_PRE
+    or_rcc_cfg0 RCC_HPRE_DIV1
+    or_rcc_cfg0 RCC_PPRE2_DIV1
+    or_rcc_cfg0 RCC_PPRE1_DIV2
+    and_rcc_cfg0 ~(RCC_PLLSRC | RCC_PLLXTPRE | RCC_PLLMULL)
+    or_rcc_cfg0 (RCC_PLLSRC_HSI_Div2 | RCC_PLLMULL12)
+    or_rcc_ctrl RCC_PLLON
+1:
+    li t0, R32_RCC_CTLR
+    lw t0, (t0)
+    li t1, RCC_PLLRDY
+    and t0, t0, t1
+    beq t0, zero, 1b
+
+    and_rcc_cfg0 ~(RCC_SW)
+    or_rcc_cfg0 RCC_SW_PLL
+1:
+    li t0, R32_RCC_CFGR0
+    lw t0, (t0)
+    li t1, RCC_SWS
+    and t0, t0, t1
+    li t1, 8
+    bne t0, t1, 1b
+
+    // SystemInit in asm end
+    
+
+
 	la t0, main
 	csrw mepc, t0
 	mret

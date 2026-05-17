@@ -740,7 +740,7 @@ buf pageBuffer 256
     pageAddress 256 +
     findFirstRAMWord
     dup find_word_end swap - CELL_SIZE /       ( pFreeFlashPtr totalWordSize )
-    <R dup R> -                                       ( pFreeFlashPtr remainingWords )
+    <R dup >R -                                       ( pFreeFlashPtr remainingWords )
     
     dup 0 > if
         ( there's more to be copied )          ( pFreeFlashPtr remainingWords )
