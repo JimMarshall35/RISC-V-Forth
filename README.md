@@ -31,7 +31,7 @@ It relies on a python script that compiles forth source code into threaded code,
 
 - Open source gcc toolchain
 - Dockerfile builds a docker container containing the cross compiler risc-v gcc toolchain, make, and python
-- When this file is changed a CI job will build the new container and publish it to ghcr.io/jimmarshall35/risc-v-forth/toolchain:main
+- When this file is changed, a CI job will build the new container and publish it to ghcr.io/jimmarshall35/risc-v-forth/toolchain:main
 - The container is then used in the build CI job, and can be used for local development 
 
 # Boards tested on:
