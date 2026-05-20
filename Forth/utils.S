@@ -1,3 +1,6 @@
+.include "defines.S"
+
+
 .global strcpy_max
 .global memset
 .global memcpy
@@ -15,7 +18,6 @@
 scratch_pad: .zero 32
 
 .section .text
-.include "defines.S"
 itofa_hex_LUT: .ascii "0123456789abcdef"
 
 .balign 4
@@ -30,7 +32,7 @@ print_forth_string:
 1:
     beq t4, zero, 2f
     lb a0, 0(t3)
-    li a1, UART_BASE
+    la a1, UART_BASE
     call putc
     addi t4, t4, -1
     addi t3, t3, 1
@@ -258,7 +260,7 @@ fatoi_end:
 fatoi_error_end:
     # report error
     mv a0, t3
-    li a1, UART_BASE
+    la a1, UART_BASE
     call puts
     RestoreReturnAddress
     ret
@@ -467,7 +469,7 @@ print_int:
     la a1, scratch_pad
     li a2, 32
     call itofa_hex
-    li a1, UART_BASE
+    la a1, UART_BASE
     la a0, scratch_pad
     call puts
     RestoreReturnAddress

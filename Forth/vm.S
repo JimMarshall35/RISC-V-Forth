@@ -1,5 +1,5 @@
-.include "defines.S"
 .include "VmMacros.S"
+.include "defines.S"
 .altmacro
 #
 #   Prefix any character with ! to use it literally in a macro.
@@ -156,7 +156,7 @@ show_stack_end_str:          .ascii " ]\n\r\0"
 .balign 4
 
 vm_error_handler:
-    li a1, UART_BASE
+    la a1, UART_BASE
     la a0, vm_str_error_message
     lw a0, 0(a0)
     call puts
@@ -194,7 +194,7 @@ vm_run:
 
 
     la a0, starting_interpreter_string
-    li a1, UART_BASE
+    la a1, UART_BASE
     call puts
 
     la a0, emit    
@@ -265,16 +265,16 @@ vm_run:
 
 word_header_first emit,   "emit",     PRIMITIVE_WORD_BITMASK, key
     PopDataStack a0
-    li a1, UART_BASE
+    la a1, UART_BASE
     call putc
     end_word
 
 word_header       key,    "key",      PRIMITIVE_WORD_BITMASK, loadCell, emit
-    li a0, UART_BASE
+    la a0, UART_BASE
     call getc_block         # char in a0
     # call print_int
     # la a0, linened
-    # li a1, UART_BASE
+    # la a1, UART_BASE
     # call puts
     PushDataStack a0
     end_word
@@ -295,21 +295,21 @@ word_header store, "!!", PRIMITIVE_WORD_BITMASK, loadByte, loadCell
     # mv t5, t2
 
     # la a0, debug_store1
-    # li a1, UART_BASE
+    # la a1, UART_BASE
     # call puts
 
     # mv a0, t4
     # call print_int
 
     # la a0, debug_store2
-    # li a1, UART_BASE
+    # la a1, UART_BASE
     # call puts
 
     # mv a0, t5
     # call print_int
     
     # la a0, linened
-    # li a1, UART_BASE
+    # la a1, UART_BASE
     # call puts
     # PopReg t3
     # PopReg t2
@@ -417,10 +417,10 @@ word_header findXT, "!'", 0, forth_and, dup2
     # DEBUG BEGIN
     # PushReg t2
     # mv a0, t2
-    # li a1, UART_BASE
+    # la a1, UART_BASE
     # call puts
     # la a0, linened
-    # li a1, UART_BASE
+    # la a1, UART_BASE
     # call puts
     # PopReg t2
     # DEBUG_END
@@ -512,7 +512,7 @@ word_header forth_fatoi, "$", PRIMITIVE_WORD_BITMASK, show, pop_return
 word_header show, "show", PRIMITIVE_WORD_BITMASK, execute, forth_fatoi
     # DATA STACK
     la a0, show_data_stack_begin_str
-    li a1, UART_BASE
+    la a1, UART_BASE
     call puts
 
     mv t1, s1               # t1 = data stack ptr
@@ -534,7 +534,7 @@ word_header show, "show", PRIMITIVE_WORD_BITMASK, execute, forth_fatoi
     call itofa
     
     la a0, vm_scratch_pad
-    li a1, UART_BASE
+    la a1, UART_BASE
     call puts
     PopReg t4
     PopReg t3
@@ -544,7 +544,7 @@ word_header show, "show", PRIMITIVE_WORD_BITMASK, execute, forth_fatoi
     PushReg t1
     beq t1, t4, 2f  # skip comma if on last stack entry
     la a0, show_comma_sep_str
-    li a1, UART_BASE
+    la a1, UART_BASE
     call puts
 2:
     PopReg t1
@@ -555,12 +555,12 @@ word_header show, "show", PRIMITIVE_WORD_BITMASK, execute, forth_fatoi
     bne t1, t3, 1b
 
     la a0, show_stack_end_str
-    li a1, UART_BASE
+    la a1, UART_BASE
     call puts
     end_word
 data_stack_empty:
     la a0, show_stack_end_str
-    li a1, UART_BASE
+    la a1, UART_BASE
     call puts
     end_word
 
@@ -572,7 +572,7 @@ word_header execute, "execute", PRIMITIVE_WORD_BITMASK, showR, show
 word_header showR, "showR", PRIMITIVE_WORD_BITMASK, setHere, execute
     # RETURN STACK
     la a0, show_return_stack_begin_str
-    li a1, UART_BASE
+    la a1, UART_BASE
     call puts
 
     mv t1, s3               # t1 = data stack ptr
@@ -594,7 +594,7 @@ word_header showR, "showR", PRIMITIVE_WORD_BITMASK, setHere, execute
     call itofa
     
     la a0, vm_scratch_pad
-    li a1, UART_BASE
+    la a1, UART_BASE
     call puts
     PopReg t4
     PopReg t3
@@ -604,7 +604,7 @@ word_header showR, "showR", PRIMITIVE_WORD_BITMASK, setHere, execute
     PushReg t1
     beq t1, t4, 2f  # skip comma if on last stack entry
     la a0, show_comma_sep_str
-    li a1, UART_BASE
+    la a1, UART_BASE
     call puts
 2:
     PopReg t1
@@ -615,12 +615,12 @@ word_header showR, "showR", PRIMITIVE_WORD_BITMASK, setHere, execute
     bne t1, t3, 1b
 
     la a0, show_stack_end_str
-    li a1, UART_BASE
+    la a1, UART_BASE
     call puts
     end_word
 return_stack_empty:
     la a0, show_stack_end_str
-    li a1, UART_BASE
+    la a1, UART_BASE
     call puts
     end_word
 

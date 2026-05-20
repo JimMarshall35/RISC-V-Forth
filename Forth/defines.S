@@ -1,5 +1,3 @@
-.equ UART_BASE, 0x40004400
-
 .macro SaveReturnAddress 
     addi sp, sp, -16  # allocate 16 bytes on stack
     sw   ra, 12(sp)   # store return address on stack

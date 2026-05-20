@@ -3,7 +3,7 @@ ENTRY( _start )
 __stack_size = 2048;
 
 PROVIDE( _stack_size = __stack_size );
-
+PROVIDE(UART_BASE = 0x40004400);
 
 MEMORY
 {  
@@ -127,7 +127,7 @@ SECTIONS
 	} >FLASH AT>FLASH 
 
 	/* End of used flash */
-	_flash_free_start = ALIGN(4);
+	PROVIDE(_flash_free_start = ALIGN(4));
 
 	.dalign :
 	{

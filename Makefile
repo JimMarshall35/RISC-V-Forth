@@ -24,7 +24,7 @@ LDFLAGS = -T ch32/Link.ld -nostartfiles -Xlinker --gc-sections -Wl,-Map,"Forth.m
 
 # Include paths
 
-FORTH_INCLUDES = -IForth -Ich32
+FORTH_INCLUDES = -IForth -Ich32 -Iqemu
 
 INCLUDES = $(FORTH_INCLUDES)
 # Source files
@@ -73,6 +73,6 @@ $(GEN_ASM): tools/Compiler.py $(FORTH_SRC)
 
 # Clean
 clean:
-	rm -f $(FORTH_OBJS) $(FORTH).elf $(FORTH).bin $(FORTH).map $(GEN_ASM)
+	rm -f $(QEMU_OBJS) $(QEMU_FORTH).elf $(QEMU_FORTH).map $(FORTH_OBJS) $(FORTH).elf $(FORTH).bin $(FORTH).map $(GEN_ASM)
 
 .PHONY: all clean

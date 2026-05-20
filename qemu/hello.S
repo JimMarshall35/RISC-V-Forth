@@ -1,5 +1,4 @@
-.include "defines.S"
-.equ RAM_END, 0x88000000
+.equ RAM_END, 0x8000A800
 .global _start	      # Provide program starting address
 
 
@@ -10,10 +9,10 @@ _start:
 
 main:
     li sp, RAM_END
-    li a0, UART_BASE
+    la a0, UART_BASE
     call initUart
 
-    li a1, UART_BASE
+    la a1, UART_BASE
     la a0, title_string
     call puts
 
