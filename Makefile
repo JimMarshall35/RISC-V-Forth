@@ -5,6 +5,7 @@ OBJCOPY = riscv-none-elf-objcopy
 # Targets
 FORTH = Forth
 QEMU_FORTH = QEMUForth
+ASM_BENCHMARK = ASMBenchmark
 
 # ===== Select startup file here =====
 # Options: D6, D8, D8W
@@ -41,6 +42,7 @@ FORTH_S := $(filter-out $(GEN_ASM), $(wildcard Forth/*.S Forth/*.s))
 
 FORTH_SRCS = $(CH32_SRC) $(FORTH_S) $(GEN_ASM)
 QEMU_SRCS = $(QEMU_SRC) $(FORTH_S) $(GEN_ASM)
+ASM_BENCHMARK_SRCS = $(CH32_SRC) Forth/utils.S asm_benchmark/main.S
 
 # Object files
 FORTH_OBJS = $(FORTH_SRCS:.c=.o)
@@ -48,8 +50,10 @@ FORTH_OBJS := $(FORTH_OBJS:.S=.o)
 
 QEMU_OBJS = $(QEMU_SRCS:.S=.o)
 
+ASM_BENCHMARK_OBJS = $(ASM_BENCHMARK_SRCS:.S=.o)
+
 # Default target
-all: $(FORTH).elf $(QEMU_FORTH).elf
+all: $(FORTH).elf $(QEMU_FORTH).elf $(ASM_BENCHMARK).elf
 
 # Link
 $(QEMU_FORTH).elf: $(QEMU_OBJS)
@@ -57,6 +61,9 @@ $(QEMU_FORTH).elf: $(QEMU_OBJS)
 
 $(FORTH).elf: $(FORTH_OBJS)
 	$(CC) $(CFLAGS) $(LDFLAGS) $(FORTH_OBJS) -o $@ 
+
+$(ASM_BENCHMARK).elf: $(ASM_BENCHMARK_OBJS)
+	$(CC) $(CFLAGS) $(LDFLAGS) $(ASM_BENCHMARK_OBJS) -o $@ 
 
 # Compile C
 %.o: %.c
@@ -73,6 +80,6 @@ $(GEN_ASM): tools/Compiler.py $(FORTH_SRC)
 
 # Clean
 clean:
-	rm -f $(QEMU_OBJS) $(QEMU_FORTH).elf $(QEMU_FORTH).map $(FORTH_OBJS) $(FORTH).elf $(FORTH).bin $(FORTH).map $(GEN_ASM)
+	rm -f $(ASM_BENCHMARK_OBJS) $(QEMU_OBJS) $(ASM_BENCHMARK).elf $(ASM_BENCHMARK).map $(QEMU_FORTH).elf $(QEMU_FORTH).map $(FORTH_OBJS) $(FORTH).elf $(FORTH).bin $(FORTH).map $(GEN_ASM)
 
 .PHONY: all clean
