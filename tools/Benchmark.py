@@ -1,6 +1,10 @@
 import argparse
 import pexpect
 import time
+import hashlib
+import subprocess
+
+sha256 = hashlib.sha256()
 
 fib = """: fib         
   dup 0 = if
@@ -29,8 +33,30 @@ fib = """: fib
 
 fib_lines = [x.strip() + "\r" for x in fib.splitlines()]
 
+file_hash = ""
+
+git_hash = ""
+
+forth_code_hash = ""
+
 N = 1000000
 EXPECTED_VAL = "0x928b54e2"
+
+def get_git_commit_hash() -> str:
+    result = subprocess.run(
+        ["git", "rev-parse", "HEAD"],
+        capture_output=True,
+        text=True,
+        check=True,
+    )
+    return result.stdout.strip()
+
+def get_file_hash(path) -> str:
+    sha256 = hashlib.sha256()
+    with open(path, "rb") as f:
+        while chunk := f.read(8192):
+            sha256.update(chunk)
+    return sha256.hexdigest()
 
 def load_forth_fibonacci_src(proc):
     for l in fib_lines:
@@ -57,7 +83,7 @@ def collect_forth(args):
             proc.send("\r")
             proc.expect(EXPECTED_VAL, timeout=10)
             elapsed = time.perf_counter() - start
-            seconds_str = f"{elapsed:.6f}\n" 
+            seconds_str = f"{elapsed:.6f}, {N}, {file_hash}, {git_hash}, {forth_code_hash}\n" 
             print(seconds_str)
             with open("benchmark_data/benchmark_forth_data.txt", "a") as dataF:
                 dataF.write(seconds_str)
@@ -80,14 +106,20 @@ def collect_asm(args):
             proc.send(f"\r")
             proc.expect(EXPECTED_VAL, timeout=10)
             elapsed = time.perf_counter() - start
-            seconds_str = f"{elapsed:.6f}\n" 
+            seconds_str = f"{elapsed:.6f}, {N}, {file_hash}, {git_hash}, {forth_code_hash}\n" 
             print(seconds_str)
             with open("benchmark_data/benchmark_asm_data.txt", "a") as dataF:
                 dataF.write(seconds_str)
 
     pass
 
+def write_key():
+    with open("benchmark_data/data_key.txt", "w") as keyF:
+        keyF.write("time in seconds, fibonacci number calculated, elf file sha256 hash, git commit hash, benchmark forth code hash")
+
 def main():
+    global file_hash, git_hash, forth_code_hash
+
     parser = argparse.ArgumentParser()
 
     subparsers = parser.add_subparsers(
@@ -98,12 +130,22 @@ def main():
     # Mode 1
     asm_mode_parser = subparsers.add_parser("asm")
     asm_mode_parser.add_argument("--numreps", type=int, default=10)
+    asm_mode_parser.add_argument("--elf_path", type=str, default="../ASMBenchmark.elf")
 
     # Mode 2
     forth_mode_parser = subparsers.add_parser("forth")
     forth_mode_parser.add_argument("--numreps", type=int, default=10)
+    forth_mode_parser.add_argument("--elf_path", type=str, default="../Forth.elf")
 
     args = parser.parse_args()
+    write_key()
+    file_hash = get_file_hash(args.elf_path)
+    git_hash = get_git_commit_hash()
+    forth_code_hash = hashlib.sha256(fib.encode("utf-8")).hexdigest()
+    
+    print(f"file_hash       {file_hash}")
+    print(f"git_hash        {git_hash}")
+    print(f"forth_code_hash {forth_code_hash}")
 
     if args.mode == "asm":
         collect_asm(args)
