@@ -52,9 +52,10 @@ def collect_forth(args):
         print("loading fibonacci src done.")
 
         for i in range(args.numreps):
+            proc.send(f"{N} fib")
             start = time.perf_counter()
-            proc.sendline(f"{N} fib\r")
-            proc.expect(EXPECTED_VAL)
+            proc.send("\r")
+            proc.expect(EXPECTED_VAL, timeout=10)
             elapsed = time.perf_counter() - start
             seconds_str = f"{elapsed:.6f}\n" 
             print(seconds_str)
@@ -76,8 +77,8 @@ def collect_asm(args):
         time.sleep(2)
         for i in range(args.numreps):
             start = time.perf_counter()
-            proc.sendline(f"\r")
-            proc.expect(EXPECTED_VAL)
+            proc.send(f"\r")
+            proc.expect(EXPECTED_VAL, timeout=10)
             elapsed = time.perf_counter() - start
             seconds_str = f"{elapsed:.6f}\n" 
             print(seconds_str)
