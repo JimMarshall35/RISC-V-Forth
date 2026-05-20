@@ -27,6 +27,11 @@ It relies on a python script that compiles forth source code into threaded code,
   - forth_shell/
     - a rust program to connect to the microcontroller over serial, basically the same as using minicom but will be extended with new features such as debugging, will always remain an optional enhancement, with the forth being usable with just a serial communication terminal like minicom
 
+# Toolchain
+
+- Dockerfile builds a docker container containing the cross compiler risc-v gcc toolchain
+- When this file is changed a CI job will build the new container and publish it to ghcr.io/jimmarshall35/risc-v-forth/toolchain:main
+- The container is then used in the build CI job, and can be used for local development 
 
 # Boards tested on:
 - [Adafruit dev board](https://www.adafruit.com/product/5996?srsltid=AfmBOorn9M97Aqk2NByeKiGZFeXM_srwdjtc68xdrYgTiuJvrQ0qo3R4)
