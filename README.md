@@ -38,6 +38,7 @@ It relies on a python script that compiles forth source code into threaded code,
 
 - Previously this project was in a different repo, and built an image that was runnable in qemu
   - This repo had a script that ran end to end tests on the qemu build, which ran in CI
+  - The forth has changed a bit since then and has notions of flash and ram regions baked in, so qemu build needs changing before it will work
 - I want to reinstate this qemu build, and have this repo produce both a microcontroller and a qemu build
 - The advantage of the qemu version is it's easily debugable with gdb and can easily be used for testing in CI
 
