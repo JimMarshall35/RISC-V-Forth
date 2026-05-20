@@ -60,6 +60,20 @@ It relies on a python script that compiles forth source code into threaded code,
 - What i ultimately want to do is have a self hosted github runner that will flash the mcu in a fully automated manner and run pre-merge tests
   - it will use the same pexpect python library as the qemu test script did, but will interface with a minicom process instead of qemu
   - adafruit dev board has boot and reset pads underneath - I have accidently ripped mine off, need to order more dev boards
+- Another docker container will be the test runner, and it will contain:
+  - wchisp
+  - minicom
+  - python
+    - pexpect library
+  - python script to flash mcu
+    - manipulate boot and reset pins with raspberry pi gpio to put chip into bootloader mode
+    - flash with chisp
+    - reset mcu
+  - python script to run tests
+    - start minicom process
+    - connect to it with pexpect
+    - run tests - send input and expect certain output from stdin/out
+    - report results
 
 # Boards tested on:
 - [Adafruit dev board](https://www.adafruit.com/product/5996?srsltid=AfmBOorn9M97Aqk2NByeKiGZFeXM_srwdjtc68xdrYgTiuJvrQ0qo3R4)
