@@ -30,7 +30,7 @@ It relies on a python script that compiles forth source code into threaded code,
     - AssemblySrcParser.py - a library needed by Compiler.py, parses assembly word header macros in vm.S to link new words into the dictionary
     - ResolveTraceAddress.py - a simple debugging tool that will parse the .map file generated and match printed addresses to the name of words
   - forth_shell/
-    - a rust program to connect to the microcontroller over serial, basically the same as using minicom but will be extended with new features such as debugging, will always remain an optional enhancement, with the forth being usable with just a serial communication terminal like minicom
+    - a rust program to connect to the microcontroller over serial, basically the same as using minicom but it calls forth words in the background (showWords and showLastWord) to learn the contents of memory, which it displays in panes on the right. You can scroll through the list of words and inspect the memory of each one. It also converts addresses of word implementations into their assembler label. Not required to use the forth - a debugging tool.
 - Dockerfile
   - Dockerfile builds a docker container containing the cross compiler risc-v gcc toolchain, make, and python
   - When this file is changed and pushed to github, a CI job will build the new container and publish it to ghcr.io/jimmarshall35/risc-v-forth/toolchain:main
