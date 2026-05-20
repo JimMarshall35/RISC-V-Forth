@@ -12,10 +12,6 @@ main:
     la a0, UART_BASE
     call initUart
 
-    la a1, UART_BASE
-    la a0, title_string
-    call puts
-
     call vm_run
 
  loop:
@@ -23,5 +19,3 @@ main:
     
     ret
  
-title_string: .ascii "RISC-V Forth CH32V203\n\r"
-

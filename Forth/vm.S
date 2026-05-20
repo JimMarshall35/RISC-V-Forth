@@ -146,6 +146,8 @@ vm_after_first_word_val: .word forth_flash_dict_end
 end_forth_data_section_data:
 # FORTH_FLASH DATA SECTION END
 
+title_string:                .ascii "RISC-V Forth CH32V203\n\r"
+
 starting_interpreter_string: .ascii "starting outer interpreter...\n\r\0"
 
 show_data_stack_begin_str:   .ascii "data   [ \0"
@@ -177,6 +179,10 @@ debug_store2: .ascii " At address \0"
 
 vm_run:
     SaveReturnAddress
+
+    la a1, UART_BASE
+    la a0, title_string
+    call puts
 
     # init dictionary
     # This forth does not use the data section, it uses one or two variables in a data section-like way
