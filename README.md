@@ -19,6 +19,8 @@ It relies on a python script that compiles forth source code into threaded code,
   - non portable code specific to the ch32v203G6, code to initialize the microcontroller clock and uart
     - C code taken from https://github.com/openwch/ch32v20x/tree/main
     - in time i hope to replace it with a much simpler and smaller asm implementation
+- qemu/
+  - contains code specific to qemu build
 - tools/
   - python tools to initially compile forth into threaded code
     - Compiler.py - compile forth to threaded code
@@ -26,13 +28,21 @@ It relies on a python script that compiles forth source code into threaded code,
     - ResolveTraceAddress.py - a simple debugging tool that will parse the .map file generated and match printed addresses to the name of words
   - forth_shell/
     - a rust program to connect to the microcontroller over serial, basically the same as using minicom but will be extended with new features such as debugging, will always remain an optional enhancement, with the forth being usable with just a serial communication terminal like minicom
-
-# Toolchain
-
-- Open source gcc toolchain
-- Dockerfile builds a docker container containing the cross compiler risc-v gcc toolchain, make, and python
-- When this file is changed, a CI job will build the new container and publish it to ghcr.io/jimmarshall35/risc-v-forth/toolchain:main
-- The container is then used in the build CI job, and can be used for local development 
+- Dockerfile
+  - Dockerfile builds a docker container containing the cross compiler risc-v gcc toolchain, make, and python
+  - When this file is changed and pushed to github, a CI job will build the new container and publish it to ghcr.io/jimmarshall35/risc-v-forth/toolchain:main
+  - The container is then used in the build CI job, and can be used for local development
+- flash.sh
+  - script to flash the MCU using the wchisp tool
+- wchisp
+  - binary of open source wchisp flashing tool
+- serial.sh
+  - open minicom to communicate with MCU
+- run_qemu.sh
+  - run the qemu build (doesn't currently work)
+- Makefile
+  - top level (and only) makefile
+  - builds targets Forth and QEMUForth
 
 # QEMU
 
