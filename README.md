@@ -73,6 +73,7 @@ It relies on a python script that compiles forth source code into threaded code,
     - start minicom process
     - connect to it with pexpect
     - run tests - send input and expect certain output from stdin/out
+      - should also be able to reset the MCU via the reset pin in order to test flash programming
     - report results
 
 # Boards tested on:
