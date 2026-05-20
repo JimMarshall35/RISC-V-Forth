@@ -11,6 +11,35 @@ import pexpect
 # If one test fails the rest won't be run.
 
 # renamed to stop pytest thinking this is a test class
+
+# calculate nth fibonacci number (with 0 being fibonacci number 1)
+fib = """: fib         
+  dup 0 = if
+    drop
+    r
+  else dup 1 = if
+    0 . cr
+    drop
+    r
+  else dup 2 = if
+    1 . cr
+    drop
+    r
+  else
+    0 1 rot 2 -
+    0 do                                                                                                                                                 
+        2dup +                                                                                                                                       
+        rot drop                                                                                                                                              
+    loop
+  then
+  then
+  then
+  . cr drop                                                                                                                                                                                                                          
+;
+"""
+
+fib_lines = [x.strip() + "\r" for x in fib.splitlines()]
+
 class NotPyTestCase:
     def __init__(self, input_strs, expected_data_stack, cleanup, testName="anonymous"):
         self.input_strs = input_strs
@@ -133,6 +162,15 @@ tests = [
     "0x000000000x000000010x00000002",
     "show\r",
     "test multiline function"),
+
+    NotPyTestCase(fib_lines + ["20 fib\r"], "0x00001055", "show\r", "test 20th fibonacci number"),
+    NotPyTestCase(fib_lines + ["1 fib\r"], "0x00000000", "show\r", "test 1st fibonacci number"),
+    NotPyTestCase(fib_lines + ["2 fib\r"], "0x00000001", "show\r", "test 2nd fibonacci number"),
+    NotPyTestCase(fib_lines + ["3 fib\r"], "0x00000001", "show\r", "test 3rd fibonacci number"),
+    NotPyTestCase(fib_lines + ["4 fib\r"], "0x00000002", "show\r", "test 4th fibonacci number"),
+    NotPyTestCase(fib_lines + ["5 fib\r"], "0x00000003", "show\r", "test 5th fibonacci number"),
+    NotPyTestCase(fib_lines + ["6 fib\r"], "0x00000005", "show\r", "test 6th fibonacci number"),
+    NotPyTestCase(fib_lines + ["100 fib\r"], "0xcafb7902", "show\r", "test 100th fibonacci number"),
 ]
 
 def test_run():
