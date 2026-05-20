@@ -34,5 +34,18 @@ It relies on a python script that compiles forth source code into threaded code,
 - When this file is changed, a CI job will build the new container and publish it to ghcr.io/jimmarshall35/risc-v-forth/toolchain:main
 - The container is then used in the build CI job, and can be used for local development 
 
+# QEMU
+
+- Previously this project was in a different repo, and built an image that was runnable in qemu
+  - This repo had a script that ran end to end tests on the qemu build, which ran in CI
+- I want to reinstate this qemu build, and have this repo produce both a microcontroller and a qemu build
+- The advantage of the qemu version is it's easily debugable with gdb and can easily be used for testing in CI
+
+# Hardware testing
+
+- What i ultimately want to do is have a self hosted github runner that will flash the mcu in a fully automated manner and run pre-merge tests
+  - it will use the same pexpect python library as the qemu test script did, but will interface with a minicom process instead of qemu
+  - adafruit dev board has boot and reset pads underneath - I have accidently ripped mine off, need to order more dev boards
+
 # Boards tested on:
 - [Adafruit dev board](https://www.adafruit.com/product/5996?srsltid=AfmBOorn9M97Aqk2NByeKiGZFeXM_srwdjtc68xdrYgTiuJvrQ0qo3R4)
