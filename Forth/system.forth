@@ -410,7 +410,7 @@ asm_name ew
 
 : then ( ifBranchAddressToBackpatch -- )
     dup
-    here swap -0x17
+    here swap -
     swap !
 ; immediate 
 
