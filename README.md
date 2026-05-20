@@ -74,6 +74,7 @@ It relies on a python script that compiles forth source code into threaded code,
     - connect to it with pexpect
     - run tests - send input and expect certain output from stdin/out
       - should also be able to reset the MCU via the reset pin in order to test flash programming
+      - tests could also involve reading raspberry pi gpio pins
     - report results
 
 # Boards tested on:
