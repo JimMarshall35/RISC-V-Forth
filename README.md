@@ -21,6 +21,9 @@ It relies on a python script that compiles forth source code into threaded code,
     - in time i hope to replace it with a much simpler and smaller asm implementation
 - qemu/
   - contains code specific to qemu build
+    - startup code
+    - linker script
+    - uart driver
 - tools/
   - python tools to initially compile forth into threaded code
     - Compiler.py - compile forth to threaded code
