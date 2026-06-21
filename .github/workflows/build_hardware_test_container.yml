@@ -4,7 +4,7 @@ on:
   push:
     branches: ["main"]
     paths:
-      - ./tools/hardware_test_runner/Dockerfile
+      - tools/hardware_test_runner/Dockerfile
   workflow_dispatch:
 
 permissions:
