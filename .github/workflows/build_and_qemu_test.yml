@@ -70,6 +70,7 @@ jobs:
         cd ./tools
         pytest --hardware
     - name: Print Test Log
+      if: always()
       run: |
         cat ./tools/testlog.txt
     - uses: actions/upload-artifact@v4
