@@ -16,7 +16,7 @@ usage() {
 Usage: ${0##*/} [OPTIONS] [POSITIONAL...]
 
 Options:
-  -b, --bootloader PATH  Path to bootloader python script
+  -b, --bootloader_script PATH  Path to bootloader python script
   -w, --wchisp PATH      Path to wchisp tool
   -e, --elf FILE         Input file
   -h, --help             Show this help message and exit
@@ -32,7 +32,7 @@ EOF
 # ---- Parse ----
 while [[ $# -gt 0 ]]; do
     case "$1" in
-	-b|--bootloader)
+	-b|--bootloader_script)
             BOOTLOADER="$2"
 	    shift 2
 	    ;;
@@ -82,7 +82,7 @@ if [[ -z "$WCHISP" ]]; then
 fi
 
 if [[ -z "$BOOTLOADER" ]]; then
-   echo "Error: --bootloader is required" >&2
+   echo "Error: --bootloader_script is required" >&2
    usage
    exit 1
 fi

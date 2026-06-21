@@ -216,5 +216,7 @@ def test_run(request):
                 # Wait for the process to actually terminate
                 proc.expect(pexpect.EOF)
                 proc.close()
+            elif proc.isalive():
+                proc.close(force=True)
 
     assert True
