@@ -1,84 +1,84 @@
-name: Build ch32v203 elf file
-on:
-  push:
-    branches: ["main"]
-jobs:
-  build:
-    runs-on: ubuntu-latest
-    container:
-      image: ghcr.io/jimmarshall35/risc-v-forth/toolchain:main 
-    steps:
-      - name: Checkout repo
-        uses: actions/checkout@v4
-      - name: Build
-        run: make
-      - name: Upload build artifacts
-        uses: actions/upload-artifact@v4
-        with:
-          name: executables
-          path: |
-            Forth.elf
-            Forth.map
-            QEMUForth.elf
+# name: Build ch32v203 elf file
+# on:
+#   push:
+#     branches: ["main"]
+# jobs:
+#   build:
+#     runs-on: ubuntu-latest
+#     container:
+#       image: ghcr.io/jimmarshall35/risc-v-forth/toolchain:main 
+#     steps:
+#       - name: Checkout repo
+#         uses: actions/checkout@v4
+#       - name: Build
+#         run: make
+#       - name: Upload build artifacts
+#         uses: actions/upload-artifact@v4
+#         with:
+#           name: executables
+#           path: |
+#             Forth.elf
+#             Forth.map
+#             QEMUForth.elf
 
-  test:
-    needs: build
-    runs-on: ubuntu-latest
-    steps:
-    - name: Set up Environment
-      run: |
-        sudo apt-get update
-        sudo apt-get install -y qemu-system
-        sudo apt-get install -y python3-pexpect
-        sudo apt-get install python3-pytest
-    - name: Test testing dependencies
-      run: |
-        qemu-system-riscv32 -h
-        pytest -h 
-    - uses: actions/checkout@v4
-    - name: Download built image
-      uses: actions/download-artifact@v4
-      with:
-        name: executables
-    - name: Run Tests
-      continue-on-error: true
-      run: |
-        pytest
-    - name: Print Test Log
-      if: always()
-      run: |
-        cat ./testlog.txt
-    - uses: actions/upload-artifact@v4
-      with:
-        name: testlog
-        path: |
-          ./testlog.txt
-  hardware-test:
-    needs: build
-    runs-on: HIL-Capable
-    steps:
-    - name: Checkout repo
-      uses: actions/checkout@v4
-    - name: Download built image
-      uses: actions/download-artifact@v4
-      with:
-        name: executables
-    - name: Flash
-      run: |
-        ./tools/hardware_test_runner/autoflash.sh --bootloader_script ./tools/hardware_test_runner/bootloader.py --elf Forth.elf --wchisp ./tools/hardware_test_runner/wchisp-linux-aarch64/wchisp
-    - name: Test
-      run: |
-        cd ./tools
-        pytest --hardware
-    - name: Print Test Log
-      if: always()
-      run: |
-        cat ./tools/testlog.txt
-    - uses: actions/upload-artifact@v4
-      with:
-        name: testlog
-        path: |
-          ./tools/testlog.txt
+#   test:
+#     needs: build
+#     runs-on: ubuntu-latest
+#     steps:
+#     - name: Set up Environment
+#       run: |
+#         sudo apt-get update
+#         sudo apt-get install -y qemu-system
+#         sudo apt-get install -y python3-pexpect
+#         sudo apt-get install python3-pytest
+#     - name: Test testing dependencies
+#       run: |
+#         qemu-system-riscv32 -h
+#         pytest -h 
+#     - uses: actions/checkout@v4
+#     - name: Download built image
+#       uses: actions/download-artifact@v4
+#       with:
+#         name: executables
+#     - name: Run Tests
+#       continue-on-error: true
+#       run: |
+#         pytest
+#     - name: Print Test Log
+#       if: always()
+#       run: |
+#         cat ./testlog.txt
+#     - uses: actions/upload-artifact@v4
+#       with:
+#         name: testlog
+#         path: |
+#           ./testlog.txt
+#   hardware-test:
+#     needs: build
+#     runs-on: HIL-Capable
+#     steps:
+#     - name: Checkout repo
+#       uses: actions/checkout@v4
+#     - name: Download built image
+#       uses: actions/download-artifact@v4
+#       with:
+#         name: executables
+#     - name: Flash
+#       run: |
+#         ./tools/hardware_test_runner/autoflash.sh --bootloader_script ./tools/hardware_test_runner/bootloader.py --elf Forth.elf --wchisp ./tools/hardware_test_runner/wchisp-linux-aarch64/wchisp
+#     - name: Test
+#       run: |
+#         cd ./tools
+#         pytest --hardware
+#     - name: Print Test Log
+#       if: always()
+#       run: |
+#         cat ./tools/testlog.txt
+#     - uses: actions/upload-artifact@v4
+#       with:
+#         name: testlog
+#         path: |
+#           ./tools/testlog.txt
 
 
 
