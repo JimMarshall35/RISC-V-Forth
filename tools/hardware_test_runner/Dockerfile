@@ -3,6 +3,10 @@ RUN apk update
 RUN apk add --no-cache bash
 RUN apk add python3
 RUN apk add python3 py3-pip
+RUN apk add gcc \
+    musl-dev \
+    linux-headers \
+    python3-dev
 RUN mkdir /src/
 COPY ./bootloader.py /src/bootloader.py
 COPY ./autoflash.sh /src/autoflash.sh
