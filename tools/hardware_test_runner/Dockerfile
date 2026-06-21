@@ -13,3 +13,4 @@ RUN . ./.venv/bin/activate && pip install pytest RPi.GPIO pexpect
 RUN echo "source .venv/bin/activate" >> ~/.bashrc
 ENV PATH="/src/:${PATH}"
 # run with these opitons --device=/dev/gpiomem --device=/dev/gpiochip0 --device=/dev/ttyUSB0 --group-add keep-groups --privileged
+
