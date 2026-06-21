@@ -65,7 +65,7 @@ jobs:
         name: executables
     - name: Flash
       run: |
-        ./tools/hardware_test_runner/autoflash.sh --bootloader_script ./tools/hardware_test_runner/bootloader.py --elf Forth.elf --wchisp ./wchisp-linux-aarch64/wchisp
+        ./tools/hardware_test_runner/autoflash.sh --bootloader_script ./tools/hardware_test_runner/bootloader.py --elf Forth.elf --wchisp ./tools/hardware_test_runner/wchisp-linux-aarch64/wchisp
     - name: Test
       run: |
         cd ./tools
