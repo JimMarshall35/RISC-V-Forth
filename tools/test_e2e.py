@@ -205,7 +205,16 @@ def test_run(request):
             for test in tests:
                 test.run(proc)
         finally:
-            if proc is not None and proc.isalive():
-                proc.close(force=True)
+            if request.config.getoption("--hardware"):
+                # Send Ctrl-A then 'x' to bring up exit dialog
+                proc.send("\x01")   # Ctrl-A
+                proc.send("x")
+                # minicom asks "Leave without reset?" - confirm
+                proc.expect("Leave")
+                proc.sendline("")
+
+                # Wait for the process to actually terminate
+                proc.expect(pexpect.EOF)
+                proc.close()
 
     assert True
