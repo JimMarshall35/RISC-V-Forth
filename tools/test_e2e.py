@@ -53,20 +53,20 @@ class NotPyTestCase:
         try:
             proc.expect_exact(self.expected_data_stack_string, timeout=10)
         except pexpect.TIMEOUT:
-            print(f"Timeout waiting for expected output: {self.expected_data_stack_string}. Input strings: {'\n'.join(self.input_strs)} Test name: {self.testName}")
+            print(f"Timeout waiting for expected output: {self.expected_data_stack_string}. Input strings: {' '.join(self.input_strs)} Test name: {self.testName}")
             assert False, f"Test '{self.testName}' failed due to timeout"
         except pexpect.EOF:
-            print(f"EOF for expected output: {self.expected_data_stack_string}. Input strings: {'\n'.join(self.input_strs)}")
+            print(f"EOF for expected output: {self.expected_data_stack_string}. Input strings: {' '.join(self.input_strs)}")
             assert False, "EOF"
         if self.cleanup:
             proc.sendline(self.cleanup)
             try:
                 proc.expect_exact("[  ]", timeout=10)
             except pexpect.TIMEOUT:
-                print(f"Timeout waiting for empty stack after cleanup. Input strings: {'\n'.join(self.input_strs)} . Cleanup: {self.cleanup}")
+                print(f"Timeout waiting for empty stack after cleanup. Input strings: {' '.join(self.input_strs)} . Cleanup: {self.cleanup}")
                 assert False, "Test failed due to timeout"
             except pexpect.EOF:
-                print(f"EOF waiting for empty stack after cleanup. Input strings: {'\n'.join(self.input_strs)} . Cleanup: {self.cleanup}")
+                print(f"EOF waiting for empty stack after cleanup. Input strings: {' '.join(self.input_strs)} . Cleanup: {self.cleanup}")
                 assert False, "EOF"
 
 tests = [
@@ -173,12 +173,17 @@ tests = [
     NotPyTestCase(fib_lines + ["100 fib\r"], "0xcafb7902", "show\r", "test 100th fibonacci number"),
 ]
 
-def test_run():
+def test_run(request):
     proc = None
     with open('testlog.txt','wb') as logF:
 
         try:
-            proc = pexpect.spawn("qemu-system-riscv32 -nographic -serial mon:stdio -machine virt -bios QEMUForth.elf -qmp tcp:localhost:4444,server,wait=off", timeout=10)
+            if request.config.getoption("--hardware"):
+                import hardware_test_runner.bootloader
+                proc = pexpect.spawn("minicom -D /dev/ttyUSB0 -b 115200", timeout=10)
+                hardware_test_runner.bootloader.normal_reset()
+            else:
+                proc = pexpect.spawn("qemu-system-riscv32 -nographic -serial mon:stdio -machine virt -bios QEMUForth.elf -qmp tcp:localhost:4444,server,wait=off", timeout=10)
         except pexpect.ExceptionPexpect as e:
             print(f"Error starting QEMU: {e}")
             assert False, "QEMU failed to start"
@@ -196,5 +201,17 @@ def test_run():
 
         for test in tests:
             test.run(proc)
+
+        if request.config.getoption("--hardware"):
+            # Send Ctrl-A then 'x' to bring up exit dialog
+            proc.send("\x01")   # Ctrl-A
+            proc.send("x")
+            # minicom asks "Leave without reset?" - confirm
+            proc.expect("Leave")
+            proc.sendline("")
+
+            # Wait for the process to actually terminate
+            proc.expect(pexpect.EOF)
+            proc.close()
 
     assert True

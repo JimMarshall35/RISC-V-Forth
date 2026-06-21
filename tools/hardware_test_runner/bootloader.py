@@ -6,21 +6,37 @@ BOOT0_PIN = 20
 RESET_PIN = 21
 
 def enter_bootloader():
+    GPIO.setmode(GPIO.BCM)
+    GPIO.setup(BOOT0_PIN, GPIO.OUT)
+    GPIO.setup(RESET_PIN, GPIO.OUT)
+    GPIO.output(RESET_PIN, GPIO.HIGH)  # idle high (not asserting reset)
+    GPIO.output(BOOT0_PIN, GPIO.LOW)   # idle low (normal boot)
+
     GPIO.output(BOOT0_PIN, GPIO.HIGH)   # assert boot select
     time.sleep(0.05)
     GPIO.output(RESET_PIN, GPIO.LOW)    # hold reset
     time.sleep(0.1)
     GPIO.output(RESET_PIN, GPIO.HIGH)   # release reset — chip latches BOOT0 here
     time.sleep(0.1)
-    GPIO.output(BOOT0_PIN, GPIO.LOW)    # drop boot select so NEXT reset is normal
     # chip is now sitting in the WCH system bootloader, ready for ISP/DFU
 
+    GPIO.output(RESET_PIN, GPIO.HIGH)  # idle high (not asserting reset)
+    GPIO.output(BOOT0_PIN, GPIO.LOW)   # idle low (normal boot)
+
 def normal_reset():
+    GPIO.setmode(GPIO.BCM)
+    GPIO.setup(BOOT0_PIN, GPIO.OUT)
+    GPIO.setup(RESET_PIN, GPIO.OUT)
+    GPIO.output(RESET_PIN, GPIO.HIGH)  # idle high (not asserting reset)
+    GPIO.output(BOOT0_PIN, GPIO.LOW)   # idle low (normal boot)
+
     GPIO.output(BOOT0_PIN, GPIO.LOW)
     time.sleep(0.05)
     GPIO.output(RESET_PIN, GPIO.LOW)
     time.sleep(0.1)
-    GPIO.output(RESET_PIN, GPIO.HIGH)
+
+    GPIO.output(RESET_PIN, GPIO.HIGH)  # idle high (not asserting reset)
+    GPIO.output(BOOT0_PIN, GPIO.LOW)   # idle low (normal boot)
 
 def cmd_reset(args):
     print(f"Resetting")
@@ -47,13 +63,9 @@ def build_parser():
 def main():
     parser = build_parser()
     args = parser.parse_args()
-    GPIO.setmode(GPIO.BCM)
-    GPIO.setup(BOOT0_PIN, GPIO.OUT)
-    GPIO.setup(RESET_PIN, GPIO.OUT)
-    GPIO.output(RESET_PIN, GPIO.HIGH)  # idle high (not asserting reset)
-    GPIO.output(BOOT0_PIN, GPIO.LOW)   # idle low (normal boot)
+    
     args.func(args)
-    GPIO.output(RESET_PIN, GPIO.HIGH)  # idle high (not asserting reset)
-    GPIO.output(BOOT0_PIN, GPIO.LOW)   # idle low (normal boot)
+    
 
-main()
+if __name__ == "__main__":
+    main()
