@@ -1,1 +1,0 @@
-qemu-system-riscv32: Unable to find the RISC-V BIOS "QEMUForth.elf"
