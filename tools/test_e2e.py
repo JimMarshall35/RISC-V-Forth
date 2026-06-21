@@ -193,16 +193,19 @@ def test_run(request):
         proc.logfile = logF
 
         try:
-            proc.expect("dict end: 0x[0-9a-fA-F]{8}", timeout=10)
-        except pexpect.TIMEOUT:
-            print("Timeout waiting for 'dict end:' prompt.")
-            assert False, "QEMU did not output expected prompt"
-        except pexpect.EOF:
-            print("pexpect.EOF")
-            assert False, "QEMU did not output expected prompt"
+            try:
+                proc.expect("dict end: 0x[0-9a-fA-F]{8}", timeout=10)
+            except pexpect.TIMEOUT:
+                print("Timeout waiting for 'dict end:' prompt.")
+                assert False, "QEMU did not output expected prompt"
+            except pexpect.EOF:
+                print("pexpect.EOF")
+                assert False, "QEMU did not output expected prompt"
 
-        for test in tests:
-            test.run(proc)
-
+            for test in tests:
+                test.run(proc)
+        finally:
+            if proc is not None and proc.isalive():
+                proc.close(force=True)
 
     assert True
