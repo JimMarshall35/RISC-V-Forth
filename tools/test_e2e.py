@@ -38,6 +38,9 @@ fib = """: fib
 ;
 """
 
+proc = None
+
+
 fib_lines = [x.strip() + "\r" for x in fib.splitlines()]
 
 class NotPyTestCase:
@@ -174,9 +177,8 @@ tests = [
 ]
 
 def test_run(request):
-    proc = None
+    global proc
     with open('testlog.txt','wb') as logF:
-
         try:
             if request.config.getoption("--hardware"):
                 import hardware_test_runner.bootloader
@@ -202,16 +204,5 @@ def test_run(request):
         for test in tests:
             test.run(proc)
 
-        if request.config.getoption("--hardware"):
-            # Send Ctrl-A then 'x' to bring up exit dialog
-            proc.send("\x01")   # Ctrl-A
-            proc.send("x")
-            # minicom asks "Leave without reset?" - confirm
-            proc.expect("Leave")
-            proc.sendline("")
-
-            # Wait for the process to actually terminate
-            proc.expect(pexpect.EOF)
-            proc.close()
 
     assert True
