@@ -74,6 +74,10 @@ jobs:
       run: |
         cd ./tools
         pytest --hardware
+    - name: Print Test Log
+      if: always()
+      run: |
+        cat ./tools/testlog.txt
     - name: Benchmark
       run: |
         ./tools/hardware_test_runner/benchmark.sh \
@@ -84,10 +88,6 @@ jobs:
             --benchmark_py ./tools/Benchmark.py \
             --output_forth ./tools/benchmark_data/benchmark_forth_data.txt \
             --output_asm ./tools/benchmark_data/benchmark_asm_data.txt 
-    - name: Print Test Log
-      if: always()
-      run: |
-        cat ./tools/testlog.txt
     - uses: actions/upload-artifact@v4
       with:
         name: testlog
