@@ -64,7 +64,7 @@ def load_forth_fibonacci_src(proc):
         proc.expect("\n")
 
 def collect_forth(args):
-    with open('benchmark_data/benchmark_log.txt','wb') as logF:
+    with open(args.out,'wb') as logF:
         proc = None
         try:
             proc = pexpect.spawn("minicom -D /dev/ttyUSB0 -b 115200", timeout=10)
@@ -91,7 +91,7 @@ def collect_forth(args):
     pass
 
 def collect_asm(args):
-    with open('benchmark_data/benchmark_log.txt','wb') as logF:
+    with open(args.out,'wb') as logF:
         proc = None
         try:
             proc = pexpect.spawn("minicom -D /dev/ttyUSB0 -b 115200", timeout=10)
