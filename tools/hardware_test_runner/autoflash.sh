@@ -17,9 +17,9 @@ Usage: ${0##*/} [OPTIONS] [POSITIONAL...]
 
 Options:
   -b, --bootloader_script PATH  Path to bootloader python script
-  -w, --wchisp PATH      Path to wchisp tool
-  -e, --elf FILE         Input file
-  -h, --help             Show this help message and exit
+  -w, --wchisp PATH             Path to wchisp tool
+  -e, --elf FILE                Input file
+  -h, --help                    Show this help message and exit
 
 Positional:
   Any remaining arguments after options are collected as positional args.

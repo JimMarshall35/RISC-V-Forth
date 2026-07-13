@@ -80,32 +80,10 @@ jobs:
         path: |
           ./tools/testlog.txt
 
-  # hardware-test:
-  #   needs: build
-  #   runs-on: HIL-Capable
-  #   container:
-  #     image: ghcr.io/jimmarshall35/risc-v-forth/toolchain:main
-  #     options: --device=/dev/gpiomem --device=/dev/gpiochip0 --device=/dev/ttyUSB0 -v /dev/bus/usb:/dev/bus/usb --group-add keep-groups --privileged
-  #   steps:
-  #   - name: Download built image
-  #     uses: actions/download-artifact@v4
-  #     with:
-  #       name: executables
-  #   - name: Flash
-  #     run: |
-  #       autoflash.sh --bootloader_script /src/bootloader.py --elf ./Forth.elf --wchisp /src/wchisp
-  #   - name: Test
-  #     run: |
-  #       cd ./tools
-  #       pytest --hardware
-  #   - name: Print Test Log
-  #     if: always()
-  #     run: |
-  #       cat ./tools/testlog.txt
-  #   - uses: actions/upload-artifact@v4
-  #     with:
-  #       name: testlog
-  #       path: |
-  #         ./tools/testlog.txt
+
+
+
+
+
 
 
