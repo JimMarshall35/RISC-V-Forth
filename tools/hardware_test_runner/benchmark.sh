@@ -150,11 +150,19 @@ flash_elf() {
 # ---- Body ----
 flash_elf "$ELF_FORTH"
 
-python3 "$BENCHMARK_PY" forth --numreps 10 --elf_path "$ELF_FORTH"
+python3 "$BENCHMARK_PY" forth \
+    --numreps 10 \
+    --elf_path "$ELF_FORTH" \
+    --out "$OUTPUT_FORTH" \
+    --out_key "key.forth"
 
 flash_elf "$ELF_ASM"
 
-python3 "$BENCHMARK_PY" asm --numreps 10 --elf_path "$ELF_ASM"
+python3 "$BENCHMARK_PY" asm \
+    --numreps 10 \
+    --elf_path "$ELF_ASM" \
+    --out "$OUTPUT_ASM" \
+    --out_key "key.asm"
 
 echo "*************  FORTH DATA *************\n\n"
 

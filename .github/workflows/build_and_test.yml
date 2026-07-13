@@ -86,8 +86,8 @@ jobs:
             --wchisp ./tools/hardware_test_runner/wchisp-linux-aarch64/wchisp \
             --elf_asm ASMBenchmark.elf \
             --benchmark_py ./tools/Benchmark.py \
-            --output_forth ./tools/benchmark_data/benchmark_forth_data.txt \
-            --output_asm ./tools/benchmark_data/benchmark_asm_data.txt 
+            --output_forth ./benchmark_forth_data.txt \
+            --output_asm ./benchmark_asm_data.txt 
     - uses: actions/upload-artifact@v4
       with:
         name: testlog

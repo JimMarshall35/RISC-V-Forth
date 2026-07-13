@@ -85,7 +85,7 @@ def collect_forth(args):
             elapsed = time.perf_counter() - start
             seconds_str = f"{elapsed:.6f}, {N}, {file_hash}, {git_hash}, {forth_code_hash}\n" 
             print(seconds_str)
-            with open("benchmark_data/benchmark_forth_data.txt", "a") as dataF:
+            with open(args.out, "a") as dataF:
                 dataF.write(seconds_str)
 
     pass
@@ -108,13 +108,13 @@ def collect_asm(args):
             elapsed = time.perf_counter() - start
             seconds_str = f"{elapsed:.6f}, {N}, {file_hash}, {git_hash}, {forth_code_hash}\n" 
             print(seconds_str)
-            with open("benchmark_data/benchmark_asm_data.txt", "a") as dataF:
+            with open(args.out, "a") as dataF:
                 dataF.write(seconds_str)
 
     pass
 
-def write_key():
-    with open("benchmark_data/data_key.txt", "w") as keyF:
+def write_key(path):
+    with open(path, "w") as keyF:
         keyF.write("time in seconds, fibonacci number calculated, elf file sha256 hash, git commit hash, benchmark forth code hash")
 
 def main():
@@ -131,14 +131,18 @@ def main():
     asm_mode_parser = subparsers.add_parser("asm")
     asm_mode_parser.add_argument("--numreps", type=int, default=10)
     asm_mode_parser.add_argument("--elf_path", type=str, default="../ASMBenchmark.elf")
+    asm_mode_parser.add_argument("--out", type=str)
+    asm_mode_parser.add_argument("--out_key", type=str)
 
     # Mode 2
     forth_mode_parser = subparsers.add_parser("forth")
     forth_mode_parser.add_argument("--numreps", type=int, default=10)
     forth_mode_parser.add_argument("--elf_path", type=str, default="../Forth.elf")
+    forth_mode_parser.add_argument("--out", type=str)
+    forth_mode_parser.add_argument("--out_key", type=str)
 
     args = parser.parse_args()
-    write_key()
+    write_key(args.out_key)
     file_hash = get_file_hash(args.elf_path)
     git_hash = get_git_commit_hash()
     forth_code_hash = hashlib.sha256(fib.encode("utf-8")).hexdigest()
