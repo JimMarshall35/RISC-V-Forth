@@ -1,1 +1,0 @@
-time in seconds, fibonacci number calculated, elf file sha256 hash, git commit hash, benchmark forth code hash

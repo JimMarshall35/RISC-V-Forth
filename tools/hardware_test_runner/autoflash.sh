@@ -36,10 +36,10 @@ while [[ $# -gt 0 ]]; do
             BOOTLOADER="$2"
 	    shift 2
 	    ;;
-        -e|--elf)
-            ELF="$2"
-            shift 2
-            ;;
+    -e|--elf)
+        ELF="$2"
+        shift 2
+        ;;
 	-w|--wchisp)
 	    WCHISP="$2"
 	    shift 2
