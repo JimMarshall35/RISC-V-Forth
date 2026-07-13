@@ -93,6 +93,10 @@ jobs:
         name: testlog
         path: |
           ./tools/testlog.txt
+          ./benchmark_asm_data.txt 
+          ./benchmark_forth_data.txt
+          ./key.forth
+          ./key.asm
 
 
 
