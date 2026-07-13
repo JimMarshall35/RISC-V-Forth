@@ -66,7 +66,16 @@ jobs:
         name: executables
     - name: Flash
       run: |
-        ./tools/hardware_test_runner/autoflash.sh --bootloader_script ./tools/hardware_test_runner/bootloader.py --elf Forth.elf --wchisp ./tools/hardware_test_runner/wchisp-linux-aarch64/wchisp
+        ./tools/hardware_test_runner/autoflash.sh \
+          --bootloader_script ./tools/hardware_test_runner/bootloader.py \
+          --elf Forth.elf \
+          --wchisp ./tools/hardware_test_runner/wchisp-linux-aarch64/wchisp
+    - name: Test
+      run: |
+        cd ./tools
+        pytest --hardware
+    - name: Benchmark
+      run: |
         ./tools/hardware_test_runner/benchmark.sh \
             --bootloader_script ./tools/hardware_test_runner/bootloader.py \
             --elf_forth Forth.elf \
@@ -75,10 +84,6 @@ jobs:
             --benchmark_py ./tools/Benchmark.py \
             --output_forth ./tools/benchmark_data/benchmark_forth_data.txt \
             --output_asm ./tools/benchmark_data/benchmark_asm_data.txt 
-    - name: Test
-      run: |
-        cd ./tools
-        pytest --hardware
     - name: Print Test Log
       if: always()
       run: |
