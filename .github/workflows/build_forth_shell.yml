@@ -1,27 +1,27 @@
-name: Build forth_shell
-on:
-  push:
-    branches: ["main"]
-jobs:
-  build:
-    runs-on: ubuntu-latest
-    steps:
-      - name: Set up Environment
-        run: |
-          curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- -y
-      - name: Checkout repo
-        uses: actions/checkout@v4
-      - name: Build
-        run: |
-          cd tools/forth_shell
-          cargo build --release
+# name: Build forth_shell
+# on:
+#   push:
+#     branches: ["main"]
+# jobs:
+#   build:
+#     runs-on: ubuntu-latest
+#     steps:
+#       - name: Set up Environment
+#         run: |
+#           curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- -y
+#       - name: Checkout repo
+#         uses: actions/checkout@v4
+#       - name: Build
+#         run: |
+#           cd tools/forth_shell
+#           cargo build --release
 
-      - name: Upload build artifacts
-        uses: actions/upload-artifact@v4
-        with:
-          name: executables
-          path: |
-            ./tools/forth_shell/target/release/forth_shell
+#       - name: Upload build artifacts
+#         uses: actions/upload-artifact@v4
+#         with:
+#           name: executables
+#           path: |
+#             ./tools/forth_shell/target/release/forth_shell
 
 
 
