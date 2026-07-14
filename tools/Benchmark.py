@@ -41,6 +41,7 @@ forth_code_hash = ""
 
 N = 1000000
 EXPECTED_VAL = "0x928b54e2"
+proc = None
 
 def get_git_commit_hash() -> str:
     result = subprocess.run(
@@ -64,6 +65,7 @@ def load_forth_fibonacci_src(proc):
         proc.expect("\n")
 
 def collect_forth(args):
+    global proc
     with open(args.out,'wb') as logF:
         proc = None
         try:
@@ -91,6 +93,7 @@ def collect_forth(args):
     pass
 
 def collect_asm(args):
+    global proc
     with open(args.out,'wb') as logF:
         proc = None
         try:
@@ -156,5 +159,16 @@ def main():
 
     elif args.mode == "forth":
         collect_forth(args)
+
+    # Send Ctrl-A then 'x' to bring up exit dialog
+    proc.send("\x01")   # Ctrl-A
+    proc.send("x")
+    # minicom asks "Leave without reset?" - confirm
+    proc.expect("Leave")
+    proc.sendline("")
+
+    # Wait for the process to actually terminate
+    proc.expect(pexpect.EOF)
+    proc.close()
 
 main()
