@@ -220,7 +220,7 @@ asm_name cbyte
             dup getXTImmediate if 
                 execute
             else
-                ,
+                ,ptr
             then
         else
             execute
@@ -233,7 +233,7 @@ asm_name cbyte
             ( valid number string in token buffer )
             Tokenbuffer_ TokenBufferSize_ @ $  ( converted number on stack )
             get_compile_bit 0 != if
-                LiteralStr_ ' , ( TODO: NEED TO IMPLEMENT STRING LITERALS IN COMPILER - WILL HAND EDIT IN )
+                LiteralStr_ ' ,ptr ( TODO: NEED TO IMPLEMENT STRING LITERALS IN COMPILER - WILL HAND EDIT IN )
                 ,
             then
         else 
@@ -378,9 +378,11 @@ asm_name cbyte
                                     ( 2. set s0 to point to start of thread )
     0x17 c, 0x04 c, 0x00 c, 0x00 c, (      auipc	s0,0x0                  ) 
     0x39 c, 0x04 c,                 (      addi	s0,s0, 14                   )
-                                    ( 3. jump into first word in thread     )
-    0x83 c, 0x2e c, 0x04 c, 0x00 c, (      lw	t0,0[s0]                    )
-    0xE7 c, 0x80 c, 0x0e c, 0x00 c, (      jalr	t0                      )
+                                    ( 3. load half word from the thread     )
+    0x83 c, 0x12 c, 0x04 c, 0x00 c, (      lh t0,0(s0)                      )
+    
+    
+
 ;
 
 : : ( pHeader )
@@ -394,7 +396,7 @@ asm_name cbyte
 asm_name bw
 
 : ; ( pHeader -- )
-    ReturnStr_ ' ,
+    ReturnStr_ ' ,ptr
     setInterpret
     ( only set the dictionary end ptr, from where token searches start, )
     ( after the word is compiled so that a word can be redfined and use )
@@ -406,13 +408,13 @@ asm_name bw
 asm_name ew
 
 : if ( -- addressToBackpatch )
-    branch0TokenStr_ ' ,
+    branch0TokenStr_ ' ,ptr
     here
     0 ,
 ; immediate 
 
 : else ( ifBranchAddressToBackpatch -- elseBranchAddressToBackpatch )
-    branchTokenStr_ ' ,
+    branchTokenStr_ ' ,ptr
     here                 ( ifBranch here )
     0 ,
     swap dup             ( here ifBranch ifBranch )
@@ -431,28 +433,28 @@ asm_name ew
 ; immediate 
 
 : until ( loopMarker -- )
-    branch0TokenStr_ ' ,
+    branch0TokenStr_ ' ,ptr
     here swap - -1 * , 
 ; immediate 
 
 : do ( -- startLabel initialJump )
-    branchTokenStr_ ' ,    ( initial jump to test label )
+    branchTokenStr_ ' ,ptr ( initial jump to test label )
     here 0 ,
-    here                   ( initialJump startlabel )
-    swap                   ( startLabel initialJump )
-    pushReturnStr_ ' dup , ( compile code to push i onto return stack )
-    ,                      ( compile code to push limit onto return stack ) 
+    here                      ( initialJump startlabel )
+    swap                      ( startLabel initialJump )
+    pushReturnStr_ ' dup ,ptr ( compile code to push i onto return stack )
+    ,ptr                      ( compile code to push limit onto return stack ) 
 ; immediate 
 
 
 : loop ( startLabel initialJump -- ) 
     ( compile code to pop i and limit from return stack )
-    popReturnStr_ ' dup , ,
+    popReturnStr_ ' dup ,ptr ,ptr
 
     ( compile code to increment i )
-    LiteralStr_ ' ,
+    LiteralStr_ ' ptr
     1 ,
-    addStr_ ' ,
+    addStr_ ' ptr
 
     ( we are now at the test label )
     dup ( startLabel initialJump initialJump )
@@ -461,13 +463,13 @@ asm_name ew
     ( startLabel )
 
     ( compile code to compare i and limit and branch if not equal )
-    twodupStr_ ' ,
-    equalsStr_ ' ,
-    branch0TokenStr_ ' ,
+    twodupStr_ ' ,ptr
+    equalsStr_ ' ,ptr
+    branch0TokenStr_ ' ,ptr
     here swap - -1 * ,
 
     ( compile code to clean up i and limit from int stack now that the loop has ended ) 
-    dropStr_ ' dup , , 
+    dropStr_ ' dup ,ptr ,ptr 
 ; immediate 
 
 : printc ( cstring -- )
@@ -555,9 +557,9 @@ asm_name do_does
     ( setCompile )
     compileHeader
     enter_word_macro
-    LiteralStr_ ' ,
+    LiteralStr_ ' ,ptr
     here 12 + ,
-    ReturnStr_ ' ,
+    ReturnStr_ ' ,ptr
     0 ,
     setDictionaryEnd
 ;
@@ -565,14 +567,14 @@ asm_name do_does
 : does>
     ( compile code to push the location we want the last created word to jump to    )
     ( instead of returning                                                          )
-    LiteralStr_ ' ,
+    LiteralStr_ ' ,ptr
     here 8 + ,
     ( compile code to overwrite the return execution token of the last created word )
     ( with a jump into THIS word, starting after does>                              )
-    do_doesStr_ ' ,
+    do_doesStr_ ' ,ptr
     ( compile a return so that the does> code doesn't execute when the defining word )
     ( is used to create a definition.                                                )
-    ReturnStr_ ' ,
+    ReturnStr_ ' ,ptr
 ; immediate
 
 asm_name does

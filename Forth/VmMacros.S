@@ -25,7 +25,7 @@
 .equ FIND_TOKEN_ERROR_BIT, 4
 .equ NUM_IO_HEX_BIT, 8   # if not set, num io is decimal
 
-.extern RAM_START, 0x20000000
+.equ RAM_START, 0x20000000
 
 .equ PRIMITIVE_WORD_BITMASK, 2
 
@@ -150,7 +150,7 @@
 \name\()_impl:
 .endm
 
-.macro decode_half_word_ptr \inHalfWordPtrReg, \outRawPtrReg
+.macro decode_half_word_ptr inHalfWordPtrReg, outRawPtrReg
     andi t0, \inHalfWordPtrReg, 1
     beq t0, zero, 1f
     # first bit is set, therefore this is an offset into the RAM
@@ -242,10 +242,6 @@ linened2: .ascii "\n\r\0"
 # These are word aligned and so the bottom bit signifies whether an offset
 # to the RAM region or not
 #
-.macro impl_ptr ptr
-    .if \ptr >= RAM_START
-        .hword ((\ptr - RAM_START) | 1)  & 0xffff
-    .else
-        .hword \ptr & 0xffff
-    .endif
+.macro impl_ptr label
+    .hword \label
 .endm
